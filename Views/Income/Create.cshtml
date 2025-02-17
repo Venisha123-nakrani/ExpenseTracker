@@ -1,0 +1,53 @@
+﻿@model ExpenseTracker.Model.Income
+
+<p>
+<a asp-controller="IncomeCategory" asp-action="Index" class="btn btn-primary1 mb-2">Add New Categories</a>
+@* <a asp-controller="IncomeCategory" asp-action="Create" class="btn btn-success mb-2">Add New Income Category</a> *@
+</p>
+
+<h2>Create Income</h2>
+<html>
+<head>
+    <style>
+        
+        .btn-primary1 {
+            color: #ffffff;
+            background-color: #d61919;
+            border-color: #d61919;
+            font-color: 
+        }
+    </style>
+</head>
+<body>
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="IncomeCategoryID" class="control-label"></label>
+        <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-control"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentModeID" class="control-label"></label>
+        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="UserID" class="control-label"></label>
+        <input asp-for="UserID" class="form-control" />
+        <span asp-validation-for="UserID" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Amount" class="control-label"></label>
+        <input asp-for="Amount" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <input asp-for="Description" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="IncomeDate" class="control-label"></label>
+        <input asp-for="IncomeDate" class="form-control" type="date" />
+    </div>
+    <div class="form-group mt-2">
+        <input type="submit" value="Create" class="btn btn-primary" />
+    </div>
+</form>
+</body>
+</html>

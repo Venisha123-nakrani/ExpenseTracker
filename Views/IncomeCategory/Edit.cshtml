@@ -1,0 +1,39 @@
+﻿@model ExpenseTracker.Model.IncomeCategory
+
+<h2>Edit Income Category</h2>
+
+<html>
+    <head>
+        <style>
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+            margin-top: 15px;
+        }
+
+        .btn-success {
+            
+            margin-top: 15px;
+        }
+        </style>
+    </head>
+    <body>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IncomeCategoryID" />
+
+    <div class="form-group">
+        <label asp-for="CategoryName"></label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+
+   
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</body>
+</html>

@@ -1,4 +1,4 @@
-using ExpenseTracker.Models;
+using ExpenseTracker.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -18,10 +18,7 @@ namespace ExpenseTracker.Controllers
             return View();
         }
 
-        public IActionResult Edit()
-        {
-            return View();
-        }
+        
 
         public IActionResult Privacy()
         {
