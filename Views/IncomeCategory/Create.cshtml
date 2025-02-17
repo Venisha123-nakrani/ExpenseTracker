@@ -1,0 +1,32 @@
+﻿@model ExpenseTracker.Model.IncomeCategory
+
+<h2>Add Income Category</h2>
+
+<html>
+<head>
+    <style>
+        .btn-secondary {
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="CategoryName"></label>
+        <input asp-for="CategoryName" class="form-control" required />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</body>
+</html>

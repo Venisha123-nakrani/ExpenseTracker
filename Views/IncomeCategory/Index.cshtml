@@ -1,0 +1,34 @@
+﻿@model IEnumerable<ExpenseTracker.Model.IncomeCategory>
+
+@{
+    ViewData["Title"] = "Income Categories";
+}
+
+<h2>Income Categories</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Add New Category</a>
+    <a asp-controller="Income" asp-action="Index" class="btn btn-primary mb-2">Add Income</a>
+
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Category Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.CategoryName</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.IncomeCategoryID" class="btn btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.IncomeCategoryID" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
