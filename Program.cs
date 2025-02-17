@@ -1,7 +1,19 @@
+using ExpenseTracker.Data;
+using ExpenseTracker.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
+     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()  // Use User instead of IdentityUser
+    .AddEntityFrameworkStores<ExpenseTrackerDbContext>()
+    .AddDefaultTokenProviders();
+
 
 var app = builder.Build();
 
@@ -17,6 +29,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
 
 app.UseAuthorization();
 

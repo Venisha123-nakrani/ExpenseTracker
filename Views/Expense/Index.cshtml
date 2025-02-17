@@ -1,0 +1,41 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<Expense>
+
+@{
+    ViewData["Title"] = "Expenses";
+}
+
+<h2>Expenses</h2>
+<a class="btn btn-primary" asp-action="Create">Add Expense</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Payment Mode</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var expense in Model)
+        {
+            <tr>
+                <td>@expense.Amount</td>
+                <td>@expense.Category.Name</td>
+                <td>@expense.Payment.Name</td>
+                <td>@expense.ExpenseDate.ToShortDateString()</td>
+                <td>
+                    <a class="btn btn-info" asp-action="Edit" asp-route-id="@expense.ExpenseID">Edit</a>
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@expense.ExpenseID">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
