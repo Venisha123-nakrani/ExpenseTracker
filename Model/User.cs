@@ -1,29 +1,47 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
 {
-    public class User
+    public partial class User
     {
         [Key]
+        [Column("UserID")]
         public int UserID { get; set; }
-        public string FullName { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+        [StringLength(255)]
+        [Unicode(false)]
+        public string FullName { get; set; } = null!;
 
-        [Required]
-        [PasswordPropertyText]
-        public string PasswordHash { get; set; }
+        [StringLength(255)]
+        [Unicode(false)]
+        public string Email { get; set; } = null!;
+
+        [NotMapped]  // This field is used only for form binding, not stored in DB
+        public string Password { get; set; } = null!;
+
+
+        [Column(TypeName = "text")]
+        public string PasswordHash { get; set; } = null!;
+
+        [Column(TypeName = "datetime")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public ICollection<Expense> Expenses { get; set; }
-        public ICollection<ExpenseReport> ExpenseReports { get; set; }
-        public ICollection<Budget> Budgets { get; set; }
-        public ICollection<RecurringExpense> RecurringExpenses { get; set; }
+        [InverseProperty("User")]
+        public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
 
-        //public bool RememberMe { get; set; }
+        [InverseProperty("User")]
+        public virtual ICollection<ExpenseReport> ExpenseReports { get; set; } = new List<ExpenseReport>();
 
+        [InverseProperty("User")]
+        public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+        [InverseProperty("User")]
+        public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
+
+        [InverseProperty("User")]
+        public virtual ICollection<RecurringExpense> RecurringExpenses { get; set; } = new List<RecurringExpense>();
     }
+
 }

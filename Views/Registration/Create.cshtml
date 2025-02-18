@@ -1,0 +1,113 @@
+﻿@model User
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Registration</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 400px;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+            background: #fff;
+        }
+
+        .form-control {
+            border-radius: 25px;
+            padding: 10px 15px;
+            align-items : center;
+            align-content : center;
+        }
+
+        .btn-primary {
+            border-radius: 25px;
+            background-color: #667eea;
+            border: none;
+            transition: 0.3s;
+        }
+
+            .btn-primary:hover {
+                background-color: #5a67d8;
+            }
+
+        .text-muted a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+            .text-muted a:hover {
+                color: #5a67d8;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3 class="text-center mb-3">Create Account</h3>
+
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label">Full Name</label>
+                <input asp-for="FullName" class="form-control" placeholder="Enter your full name" required>
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Enter your email" required>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" required>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="cpassword" class="form-label">Confirm Password</label>
+                <input name="cpassword" type="password" class="form-control" placeholder="Confirm password" required>
+                <span class="text-danger">@Html.ValidationMessage("cpassword")</span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" required>
+                <label class="form-check-label">
+                    I agree to all Terms & Conditions
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+
+            <div class="text-center mt-3 text-muted">
+                Already have an account? <a asp-controller="Login" asp-action="Login" class="text-primary">Registration</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

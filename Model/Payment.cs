@@ -1,17 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
 {
     public class Payment
     {
+
         [Key]
+        [Column("PaymentModeID")]
         public int PaymentModeID { get; set; }
 
-        public string Name { get; set; }
-
+        [StringLength(255)]
+        [Unicode(false)]
+        public string Name { get; set; } = null!;
+        [Column(TypeName = "datetime")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public ICollection<Expense> Expenses { get; set; }
-        public ICollection<Income> Incomes { get; set; }
+        [InverseProperty("Payment")]
+        public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+        public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
     }
 }

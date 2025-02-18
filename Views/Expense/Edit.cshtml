@@ -1,0 +1,41 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model Expense
+
+<h2>Edit Expense</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="ExpenseID" />
+
+    <div class="form-group">
+        <label asp-for="CategoryID" class="control-label"></label>
+        <select asp-for="CategoryID" asp-items="ViewBag.CategoryID" class="form-control"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentModeID" class="control-label"></label>
+        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="UserID" class="control-label"></label>
+        <input asp-for="UserID" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Amount" class="control-label"></label>
+        <input asp-for="Amount" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <input asp-for="Description" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="ExpenseDate" class="control-label"></label>
+        <input asp-for="ExpenseDate" class="form-control" type="date" />
+    </div>
+    <div class="form-group mt-2">
+        <input type="submit" value="Save" class="btn btn-success" />
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
