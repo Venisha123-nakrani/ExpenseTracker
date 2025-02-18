@@ -5,7 +5,7 @@
 namespace ExpenseTracker.Migrations
 {
     /// <inheritdoc />
-    public partial class uhnbg : Migration
+    public partial class changesInExpenseTbl : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

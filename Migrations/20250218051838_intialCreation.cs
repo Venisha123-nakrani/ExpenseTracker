@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExpenseTracker.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class intialCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,6 +65,33 @@ namespace ExpenseTracker.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ExpenseCategories", x => x.ExpenseCategoryID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IncomeCategories",
+                columns: table => new
+                {
+                    IncomeCategoryID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IncomeCategories", x => x.IncomeCategoryID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                columns: table => new
+                {
+                    PaymentModeID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.PaymentModeID);
                 });
 
             migrationBuilder.CreateTable(
@@ -250,9 +277,8 @@ namespace ExpenseTracker.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
                     CategoryID = table.Column<int>(type: "int", nullable: false),
-                    PaymentMode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentModeID = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsIncome = table.Column<bool>(type: "bit", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpenseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -267,7 +293,50 @@ namespace ExpenseTracker.Migrations
                         principalColumn: "ExpenseCategoryID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Expenses_Payments_PaymentModeID",
+                        column: x => x.PaymentModeID,
+                        principalTable: "Payments",
+                        principalColumn: "PaymentModeID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Expenses_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Incomes",
+                columns: table => new
+                {
+                    IncomeID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    IncomeCategoryID = table.Column<int>(type: "int", nullable: false),
+                    PaymentModeID = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IncomeDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Incomes", x => x.IncomeID);
+                    table.ForeignKey(
+                        name: "FK_Incomes_IncomeCategories_IncomeCategoryID",
+                        column: x => x.IncomeCategoryID,
+                        principalTable: "IncomeCategories",
+                        principalColumn: "IncomeCategoryID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Incomes_Payments_PaymentModeID",
+                        column: x => x.PaymentModeID,
+                        principalTable: "Payments",
+                        principalColumn: "PaymentModeID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Incomes_Users_UserID",
                         column: x => x.UserID,
                         principalTable: "Users",
                         principalColumn: "UserID",
@@ -400,8 +469,28 @@ namespace ExpenseTracker.Migrations
                 column: "CategoryID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Expenses_PaymentModeID",
+                table: "Expenses",
+                column: "PaymentModeID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Expenses_UserID",
                 table: "Expenses",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Incomes_IncomeCategoryID",
+                table: "Incomes",
+                column: "IncomeCategoryID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Incomes_PaymentModeID",
+                table: "Incomes",
+                column: "PaymentModeID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Incomes_UserID",
+                table: "Incomes",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
@@ -443,6 +532,9 @@ namespace ExpenseTracker.Migrations
                 name: "ExpenseReports");
 
             migrationBuilder.DropTable(
+                name: "Incomes");
+
+            migrationBuilder.DropTable(
                 name: "RecurringExpenses");
 
             migrationBuilder.DropTable(
@@ -455,7 +547,13 @@ namespace ExpenseTracker.Migrations
                 name: "Expenses");
 
             migrationBuilder.DropTable(
+                name: "IncomeCategories");
+
+            migrationBuilder.DropTable(
                 name: "ExpenseCategories");
+
+            migrationBuilder.DropTable(
+                name: "Payments");
 
             migrationBuilder.DropTable(
                 name: "Users");

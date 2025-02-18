@@ -1,18 +1,33 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
 {
-    public class ExpenseCategory
+    public partial class ExpenseCategory
     {
         [Key]
-        public int ExpenseCategoryID { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [Column("CategoryID")]
+        public int CategoryID { get; set; }
 
-        public ICollection<Expense> Expenses { get; set; }
-        public ICollection<Budget> Budgets { get; set; }
-        public ICollection<RecurringExpense> RecurringExpenses { get; set; }
+        [StringLength(255)]
+        [Unicode(false)]
+        public string Name { get; set; } = null!;
 
+        [Column(TypeName = "text")]
+        public string? Description { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? CreatedAt { get; set; }
+
+        [InverseProperty("Category")]
+        public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
+
+        [InverseProperty("Category")]
+        public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+
+        [InverseProperty("Category")]
+        public virtual ICollection<RecurringExpense> RecurringExpenses { get; set; } = new List<RecurringExpense>();
     }
+
 }

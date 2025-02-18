@@ -52,10 +52,21 @@ namespace ExpenseTracker.Data
                 .HasForeignKey(i => i.IncomeCategoryID);
 
             modelBuilder.Entity<Income>()
-    .HasOne(i => i.Payment)
-    .WithMany(p => p.Incomes)
-    .HasForeignKey(i => i.PaymentModeID)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(i => i.Payment)
+                .WithMany(p => p.Incomes)
+                .HasForeignKey(i => i.PaymentModeID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ExpenseCategory>()
+               .HasMany(ec => ec.Expenses)
+               .WithOne(e => e.Category)
+               .HasForeignKey(e => e.CategoryID);
+
+            modelBuilder.Entity<Expense>()
+                .HasOne(e => e.Payment)
+                .WithMany(p => p.Expenses)
+                .HasForeignKey(e => e.PaymentModeID)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

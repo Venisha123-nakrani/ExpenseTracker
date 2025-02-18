@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250212052408_addincomecategory")]
-    partial class addincomecategory
+    [Migration("20250218061234_changesInExpenseTbl")]
+    partial class changesInExpenseTbl
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -207,9 +207,6 @@ namespace ExpenseTracker.Migrations
                     b.Property<int>("PaymentModeID")
                         .HasColumnType("int");
 
-                    b.Property<int>("PaymentModeID1")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
@@ -217,7 +214,7 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("IncomeCategoryID");
 
-                    b.HasIndex("PaymentModeID1");
+                    b.HasIndex("PaymentModeID");
 
                     b.HasIndex("UserID");
 
@@ -234,11 +231,8 @@ namespace ExpenseTracker.Migrations
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("IncomeCategoryID");
 
@@ -262,7 +256,7 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("PaymentModeID");
 
-                    b.ToTable("Payment");
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("ExpenseTracker.Model.RecurringExpense", b =>
@@ -589,7 +583,7 @@ namespace ExpenseTracker.Migrations
                     b.HasOne("ExpenseTracker.Model.Payment", "Payment")
                         .WithMany("Expenses")
                         .HasForeignKey("PaymentModeID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ExpenseTracker.Model.User", "User")
@@ -626,8 +620,8 @@ namespace ExpenseTracker.Migrations
 
                     b.HasOne("ExpenseTracker.Model.Payment", "Payment")
                         .WithMany("Incomes")
-                        .HasForeignKey("PaymentModeID1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("PaymentModeID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ExpenseTracker.Model.User", "User")

@@ -1,5 +1,5 @@
 ﻿using ExpenseTracker.Data;
-using ExpenseTracker.Models;
+using ExpenseTracker.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,14 +8,14 @@ namespace ExpenseTracker.Controllers
 {
     public class ExpenseController : Controller
     {
-        private readonly ExpenseTrackerDbContext _db;
-        public ExpenseController(ExpenseTrackerDbContext db) 
+        private readonly ApplicationDbContext _db;
+        public ExpenseController(ApplicationDbContext db) 
         {
             _db = db;
         }
         public async Task<IActionResult> Index()
         {
-            var expenses = await _db.Expense
+            var expenses = await _db.Expenses
                 .Include(e => e.Category)
                 .Include(e => e.Payment)
                 .Include(e => e.User)
@@ -26,7 +26,7 @@ namespace ExpenseTracker.Controllers
         [HttpGet]
         public async Task<IActionResult> Details()
         {
-            var expense = _db.Expense
+            var expense = _db.Expenses
                 .Include(e => e.Category)
                 .Include(e => e.Payment)
                 .Include(e => e.User);
@@ -39,7 +39,7 @@ namespace ExpenseTracker.Controllers
         public IActionResult Create()
         {
 
-            ViewBag.CategoryID = _db.ExpenseCategory
+            ViewBag.CategoryID = _db.ExpenseCategories
                 .Select(c => new SelectListItem
                 {
                     Value = c.CategoryID.ToString(),
@@ -49,7 +49,7 @@ namespace ExpenseTracker.Controllers
                 .DistinctBy(c => c.Text) 
                 .ToList(); 
 
-            ViewBag.PaymentModeID = _db.Payment
+            ViewBag.PaymentModeID = _db.Payments
                 .Select(p => new SelectListItem
                 {
                     Value = p.PaymentModeID.ToString(),
@@ -73,8 +73,8 @@ namespace ExpenseTracker.Controllers
             }
 
             // Re-populate the ViewData for dropdowns to retain selections in case of validation errors
-            ViewData["CategoryID"] = new SelectList(_db.ExpenseCategory, "CategoryID", "Name", expense.CategoryID);
-            ViewData["PaymentModeID"] = new SelectList(_db.Payment, "PaymentModeID", "Name", expense.PaymentModeID);
+            ViewData["CategoryID"] = new SelectList(_db.ExpenseCategories, "CategoryID", "Name", expense.CategoryID);
+            ViewData["PaymentModeID"] = new SelectList(_db.Payments, "PaymentModeID", "Name", expense.PaymentModeID);
             // Retain entered UserID value if the form is not valid
             ViewData["UserID"] = expense.UserID;
 
@@ -84,11 +84,11 @@ namespace ExpenseTracker.Controllers
         {
             if (id == null) return NotFound();
 
-            var expense = await _db.Expense.FindAsync(id);
+            var expense = await _db.Expenses.FindAsync(id);
             if (expense == null) return NotFound();
 
-            ViewData["CategoryID"] = new SelectList(_db.ExpenseCategory, "CategoryID", "Name", expense.CategoryID);
-            ViewData["PaymentModeID"] = new SelectList(_db.Payment, "PaymentModeID", "Name", expense.PaymentModeID);
+            ViewData["CategoryID"] = new SelectList(_db.ExpenseCategories, "CategoryID", "Name", expense.CategoryID);
+            ViewData["PaymentModeID"] = new SelectList(_db.Payments, "PaymentModeID", "Name", expense.PaymentModeID);
             return View(expense);
         }
 
@@ -109,15 +109,15 @@ namespace ExpenseTracker.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_db.Expense.Any(e => e.ExpenseID == id))
+                    if (!_db.Expenses.Any(e => e.ExpenseID == id))
                         return NotFound();
                     else
                         throw;
                 }
             }
 
-            ViewData["CategoryID"] = new SelectList(_db.ExpenseCategory, "CategoryID", "Name", expense.CategoryID);
-            ViewData["PaymentModeID"] = new SelectList(_db.Payment, "PaymentModeID", "Name", expense.PaymentModeID);
+            ViewData["CategoryID"] = new SelectList(_db.ExpenseCategories, "CategoryID", "Name", expense.CategoryID);
+            ViewData["PaymentModeID"] = new SelectList(_db.Payments, "PaymentModeID", "Name", expense.PaymentModeID);
             return View(expense);
         }
 
@@ -126,7 +126,7 @@ namespace ExpenseTracker.Controllers
         {
             if (id == null) return NotFound();
 
-            var expense = await _db.Expense
+            var expense = await _db.Expenses
                 .Include(e => e.Category)
                 .Include(e => e.Payment)
                 .FirstOrDefaultAsync(m => m.ExpenseID == id);
@@ -141,10 +141,10 @@ namespace ExpenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var expense = await _db.Expense.FindAsync(id);
+            var expense = await _db.Expenses.FindAsync(id);
             if (expense != null)
             {
-                _db.Expense.Remove(expense);
+                _db.Expenses.Remove(expense);
                 await _db.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
 {
     public class IncomeCategory
     {
+        [Key]
+        [Column("IncomeCategoryID")]
         public int IncomeCategoryID { get; set; }
-
-        [Required(ErrorMessage = "Category Name is required")]
-        [StringLength(100, ErrorMessage = "Category Name cannot exceed 100 characters")]
         public string CategoryName { get; set; }
-
         public ICollection<Income> Incomes { get; set; }
     }
 }
