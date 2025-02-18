@@ -4,6 +4,7 @@ using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250218044141_newdb")]
+    partial class newdb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace ExpenseTracker.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ExpenseTracker.Model.Attachment", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Attachment", b =>
                 {
                     b.Property<int>("AttachmentID")
                         .ValueGeneratedOnAdd()
@@ -44,10 +47,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("ExpenseID");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachment");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Budget", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Budget", b =>
                 {
                     b.Property<int>("BudgetID")
                         .ValueGeneratedOnAdd()
@@ -79,10 +82,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Budgets");
+                    b.ToTable("Budget");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Expense", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Expense", b =>
                 {
                     b.Property<int>("ExpenseID")
                         .ValueGeneratedOnAdd()
@@ -120,10 +123,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Expenses");
+                    b.ToTable("Expense");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.ExpenseCategory", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.ExpenseCategory", b =>
                 {
                     b.Property<int>("ExpenseCategoryID")
                         .ValueGeneratedOnAdd()
@@ -144,10 +147,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("ExpenseCategoryID");
 
-                    b.ToTable("ExpenseCategories");
+                    b.ToTable("ExpenseCategory");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.ExpenseReport", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.ExpenseReport", b =>
                 {
                     b.Property<int>("ExpenseReportID")
                         .ValueGeneratedOnAdd()
@@ -174,10 +177,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("ExpenseReports");
+                    b.ToTable("ExpenseReport");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Income", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Income", b =>
                 {
                     b.Property<int>("IncomeID")
                         .ValueGeneratedOnAdd()
@@ -204,6 +207,9 @@ namespace ExpenseTracker.Migrations
                     b.Property<int>("PaymentModeID")
                         .HasColumnType("int");
 
+                    b.Property<int>("PaymentModeID1")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
@@ -211,14 +217,14 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("IncomeCategoryID");
 
-                    b.HasIndex("PaymentModeID");
+                    b.HasIndex("PaymentModeID1");
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Incomes");
+                    b.ToTable("Income");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.IncomeCategory", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.IncomeCategory", b =>
                 {
                     b.Property<int>("IncomeCategoryID")
                         .ValueGeneratedOnAdd()
@@ -233,10 +239,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("IncomeCategoryID");
 
-                    b.ToTable("IncomeCategories");
+                    b.ToTable("IncomeCategory");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Payment", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Payment", b =>
                 {
                     b.Property<int>("PaymentModeID")
                         .ValueGeneratedOnAdd()
@@ -253,10 +259,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("PaymentModeID");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payment");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.RecurringExpense", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.RecurringExpense", b =>
                 {
                     b.Property<int>("RecurringExpenseID")
                         .ValueGeneratedOnAdd()
@@ -292,10 +298,10 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("RecurringExpenses");
+                    b.ToTable("RecurringExpense");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.User", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.User", b =>
                 {
                     b.Property<int>("UserID")
                         .ValueGeneratedOnAdd()
@@ -320,228 +326,12 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("UserID");
 
-                    b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserID = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "admin@expense.com",
-                            FullName = "Admin User",
-                            PasswordHash = "Admin@123"
-                        },
-                        new
-                        {
-                            UserID = 2,
-                            CreatedAt = new DateTime(2024, 1, 2, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "johndoe@example.com",
-                            FullName = "John Doe",
-                            PasswordHash = "User@123"
-                        });
+                    b.ToTable("User");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Attachment", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("LoginProvider", "ProviderKey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ExpenseTracker.Model.Attachment", b =>
-                {
-                    b.HasOne("ExpenseTracker.Model.Expense", "Expense")
+                    b.HasOne("ExpenseTracker.Models.Expense", "Expense")
                         .WithMany("Attachments")
                         .HasForeignKey("ExpenseID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -550,15 +340,15 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("Expense");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Budget", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Budget", b =>
                 {
-                    b.HasOne("ExpenseTracker.Model.ExpenseCategory", "Category")
+                    b.HasOne("ExpenseTracker.Models.ExpenseCategory", "Category")
                         .WithMany("Budgets")
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Model.User", "User")
+                    b.HasOne("ExpenseTracker.Models.User", "User")
                         .WithMany("Budgets")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -569,21 +359,21 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Expense", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Expense", b =>
                 {
-                    b.HasOne("ExpenseTracker.Model.ExpenseCategory", "Category")
+                    b.HasOne("ExpenseTracker.Models.ExpenseCategory", "Category")
                         .WithMany("Expenses")
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Model.Payment", "Payment")
+                    b.HasOne("ExpenseTracker.Models.Payment", "Payment")
                         .WithMany("Expenses")
                         .HasForeignKey("PaymentModeID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Model.User", "User")
+                    b.HasOne("ExpenseTracker.Models.User", "User")
                         .WithMany("Expenses")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -596,9 +386,9 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.ExpenseReport", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.ExpenseReport", b =>
                 {
-                    b.HasOne("ExpenseTracker.Model.User", "User")
+                    b.HasOne("ExpenseTracker.Models.User", "User")
                         .WithMany("ExpenseReports")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -607,21 +397,21 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Income", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Income", b =>
                 {
-                    b.HasOne("ExpenseTracker.Model.IncomeCategory", "IncomeCategory")
+                    b.HasOne("ExpenseTracker.Models.IncomeCategory", "IncomeCategory")
                         .WithMany("Incomes")
                         .HasForeignKey("IncomeCategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Model.Payment", "Payment")
+                    b.HasOne("ExpenseTracker.Models.Payment", "Payment")
                         .WithMany("Incomes")
-                        .HasForeignKey("PaymentModeID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("PaymentModeID1")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Model.User", "User")
+                    b.HasOne("ExpenseTracker.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -634,15 +424,15 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.RecurringExpense", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.RecurringExpense", b =>
                 {
-                    b.HasOne("ExpenseTracker.Model.ExpenseCategory", "Category")
+                    b.HasOne("ExpenseTracker.Models.ExpenseCategory", "Category")
                         .WithMany("RecurringExpenses")
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Model.User", "User")
+                    b.HasOne("ExpenseTracker.Models.User", "User")
                         .WithMany("RecurringExpenses")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -653,63 +443,12 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ExpenseTracker.Model.Expense", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Expense", b =>
                 {
                     b.Navigation("Attachments");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.ExpenseCategory", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.ExpenseCategory", b =>
                 {
                     b.Navigation("Budgets");
 
@@ -718,19 +457,19 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("RecurringExpenses");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.IncomeCategory", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.IncomeCategory", b =>
                 {
                     b.Navigation("Incomes");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.Payment", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.Payment", b =>
                 {
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Model.User", b =>
+            modelBuilder.Entity("ExpenseTracker.Models.User", b =>
                 {
                     b.Navigation("Budgets");
 

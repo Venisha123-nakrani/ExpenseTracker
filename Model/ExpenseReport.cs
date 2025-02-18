@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ExpenseTracker.Models
+namespace ExpenseTracker.Model
 {
     public class ExpenseReport
     {
@@ -13,5 +13,6 @@ namespace ExpenseTracker.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public User User { get; set; }
+
     }
 }
