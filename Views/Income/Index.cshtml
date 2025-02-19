@@ -1,40 +1,97 @@
 ﻿@model IEnumerable<ExpenseTracker.Model.Income>
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 <h2>Income List</h2>
 
+<!-- Search Bar & Apply Button -->
+<form method="get" asp-action="Index" id="filterForm" class="row g-3 mb-3 d-flex align-items-end">
+    <!-- Search Bar (Increased Width) -->
+    <div class="col-lg-9 col-md-8 col-sm-12">
+        @* <label for="searchString" class="form-label">Search:</label> *@
+        <input type="text" name="searchString" id="searchString" value="@Context.Request.Query["searchString"]"
+               class="form-control" placeholder="Search...">
+    </div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary mb-2">Add New Income</a>
-</p>
+    <!-- Apply Button (Right Aligned) -->
+    <div class="col-lg-3 col-md-4 col-sm-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary w-100">Search</button>
+    </div>
+</form>
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Category</th>
-            <th>Amount</th>
-            <th>Description</th>
-            <th>Income Date</th>
-            <th>Payment Mode</th>
-            <th>User</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<!-- Add New Income Button & Dropdowns in One Row -->
+<div class="row g-3 mb-3 d-flex align-items-center">
+    <!-- Add New Income Button (Left) -->
+    <div class="col-lg-auto col-md-auto col-sm-12">
+        <a asp-action="Create" class="btn btn-primary w-100">Add New Income</a>
+    </div>
+
+    <!-- Sorting & Category Filters (Right) -->
+    <div class="col-lg-auto col-md-auto col-sm-12 ms-auto d-flex">
+        <!-- Sorting Dropdown -->
+        <div class="me-2">
+            <select name="sortOrder" id="sortOrder" class="form-select" onchange="submitForm()">
+                <option value="date_asc" selected="@(ViewData["CurrentSort"] as string == "date_asc" ? "selected" : null)">Date: Oldest First</option>
+                <option value="date_desc" selected="@(ViewData["CurrentSort"] as string == "date_desc" ? "selected" : null)">Date: Newest First</option>
+                <option value="amount_asc" selected="@(ViewData["CurrentSort"] as string == "amount_asc" ? "selected" : null)">Amount: Low to High</option>
+                <option value="amount_desc" selected="@(ViewData["CurrentSort"] as string == "amount_desc" ? "selected" : null)">Amount: High to Low</option>
+                <option value="category_asc" selected="@(ViewData["CurrentSort"] as string == "category_asc" ? "selected" : null)">Category: A-Z</option>
+                <option value="category_desc" selected="@(ViewData["CurrentSort"] as string == "category_desc" ? "selected" : null)">Category: Z-A</option>
+            </select>
+        </div>
+
+        <!-- Category Filter Dropdown -->
+        <div>
+            <select name="categoryId" id="categoryId" class="form-select" onchange="submitForm()">
+                <option value="">All Categories</option>
+                @foreach (var category in (SelectList)ViewData["Categories"])
+                {
+                    <option value="@category.Value" selected="@(Context.Request.Query["categoryId"] == category.Value ? "selected" : null)">
+                        @category.Text
+                    </option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Responsive Table -->
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
             <tr>
-                <td>@item.IncomeCategory.CategoryName</td>
-                <td>@item.Amount</td>
-                <td>@item.Description</td>
-                <td>@item.IncomeDate.ToString("yyyy-MM-dd")</td>
-                <td>@item.Payment.Name</td>
-                <td>@item.User.Email</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.IncomeID" class="btn btn-warning btn-sm">Edit</a>
-                    <a asp-action="Details" asp-route-id="@item.IncomeID" class="btn btn-info btn-sm">Details</a>
-                    <a asp-action="Delete" asp-route-id="@item.IncomeID" class="btn btn-danger btn-sm">Delete</a>
-                </td>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Income Date</th>
+                <th>Payment Mode</th>
+                <th>User</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IncomeCategory.CategoryName</td>
+                    <td>@item.Amount</td>
+                    <td>@item.Description</td>
+                    <td>@item.IncomeDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.Payment.Name</td>
+                    <td>@item.User.Email</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IncomeID" class="btn btn-warning btn-sm">Edit</a>
+                        <a asp-action="Details" asp-route-id="@item.IncomeID" class="btn btn-info btn-sm">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.IncomeID" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript for Auto-Submit on Dropdown Change -->
+<script>
+    function submitForm() {
+        document.getElementById("filterForm").submit();
+    }
+</script>

@@ -8,3 +8,19 @@
     <h1 class="display-4">Welcome To Expense Tracker</h1>
     <p>Learn about From gracy <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+@if (ViewData["UserEmail"] != null)
+
+{
+
+    <h1>Logged in as: <strong>@ViewData["UserEmail"]</strong></h1>
+
+}
+
+else
+
+{
+
+    <p>You are not logged in.</p>
+
+}
