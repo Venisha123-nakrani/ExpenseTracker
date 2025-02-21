@@ -4,8 +4,8 @@
 
 <form asp-action="Create" method="post">
     <div class="form-group">
-        <label asp-for="CategoryID" class="control-label"></label>
-        <select asp-for="CategoryID" class="form-control" id="categoryDropdown">
+        <label asp-for="ExpenseCategoryID" class="control-label"></label>
+        <select asp-for="ExpenseCategoryID" class="form-control" id="categoryDropdown">
             <option value="">-- Select Category --</option>
             @foreach (var category in ViewBag.CategoryID as List<SelectListItem>)
             {
@@ -19,10 +19,10 @@
         <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
     </div>
     <div class="form-group">
-        <label asp-for="UserID" class="control-label"></label>
-        <input asp-for="UserID" class="form-control" />
-        <span asp-validation-for="UserID" class="text-danger"></span>
+        <label class="control-label">User Email</label>
+        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
     </div>
+
     <div class="form-group">
         <label asp-for="Amount" class="control-label"></label>
         <input asp-for="Amount" class="form-control" />
@@ -37,6 +37,7 @@
     </div>
     <div class="form-group mt-2">
         <input type="submit" value="Create" class="btn btn-primary" />
+        <input asp-action="Index" class="btn btn-danger btn-sm" value="Back to List" type="submit" />
     </div>
 </form>
 

@@ -1,41 +1,107 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
-@model IEnumerable<Expense>
+﻿@model IEnumerable<ExpenseTracker.Model.Expense>
 
-@{
-    ViewData["Title"] = "Expenses";
-}
+<h2>Expense List</h2>
 
-<h2>Expenses</h2>
-<a class="btn btn-primary" asp-action="Create">Add Expense</a>
+<!-- Search & Filters -->
+<form method="get" asp-action="Index" id="filterForm" class="row g-3 mb-3 d-flex align-items-end">
+    <div class="col-lg-9 col-md-8 col-sm-12">
+        <input type="text" name="searchString" id="searchString" value="@ViewData["searchString"]"
+               class="form-control" placeholder="Search...">
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary w-100">Search</button>
+    </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Amount</th>
-            <th>Category</th>
-            <th>Payment Mode</th>
-            <th>Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var expense in Model)
-        {
+    <div class="row g-3 mb-3 d-flex align-items-center">
+        <div class="col-lg-auto col-md-auto col-sm-12">
+            <a asp-action="Create" class="btn btn-primary w-100">Add New Expense</a>
+        </div>
+
+        <div class="col-lg-auto col-md-auto col-sm-12 ms-auto d-flex">
+            <div class="me-2">
+                <select name="sortOrder" id="sortOrder" class="form-select" onchange="submitForm()">
+                    <option value="date_asc" selected="@(ViewData["CurrentSort"] as string == "date_asc" ? "selected" : null)">Date: Oldest First</option>
+                    <option value="date_desc" selected="@(ViewData["CurrentSort"] as string == "date_desc" ? "selected" : null)">Date: Newest First</option>
+                    <option value="amount_asc" selected="@(ViewData["CurrentSort"] as string == "amount_asc" ? "selected" : null)">Amount: Low to High</option>
+                    <option value="amount_desc" selected="@(ViewData["CurrentSort"] as string == "amount_desc" ? "selected" : null)">Amount: High to Low</option>
+                    <option value="category_asc" selected="@(ViewData["CurrentSort"] as string == "category_asc" ? "selected" : null)">Category: A-Z</option>
+                    <option value="category_desc" selected="@(ViewData["CurrentSort"] as string == "category_desc" ? "selected" : null)">Category: Z-A</option>
+                </select>
+            </div>
+
+            <div>
+                <select name="categoryId" id="categoryId" class="form-select" onchange="submitForm()">
+                    <option value="">Categories</option>
+                    @foreach (var category in (SelectList)ViewData["Categories"])
+                    {
+                        <option value="@category.Value" selected="@(ViewData["categoryId"]?.ToString() == category.Value ? "selected" : null)">
+                            @category.Text
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Expense Table -->
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
             <tr>
-                <td>@expense.Amount</td>
-                <td>@expense.Category.Name</td>
-                <td>@expense.Payment.Name</td>
-                <td>@expense.ExpenseDate.ToShortDateString()</td>
-                <td>
-                    <a class="btn btn-info" asp-action="Edit" asp-route-id="@expense.ExpenseID">Edit</a>
-                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@expense.ExpenseID">Delete</a>
-                </td>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Expense Date</th>
+                <th>Payment Mode</th>
+                <th>User</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Category.Name</td>
+                    <td>@item.Amount</td>
+                    <td>@item.Description</td>
+                    <td>@item.ExpenseDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.Payment.Name</td>
+                    <td>@item.User.Email</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.ExpenseID" class="btn btn-warning btn-sm">Edit</a>
+                        <a asp-action="Details" asp-route-id="@item.ExpenseID" class="btn btn-info btn-sm">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.ExpenseID" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
+<!-- Pagination -->
+@if (ViewData["TotalPages"] != null)
+{
+    int totalPages = (int)ViewData["TotalPages"];
+    int currentPage = (int)ViewData["CurrentPage"];
+
+    <nav aria-label="Expense Pagination">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { sortOrder = ViewData["CurrentSort"], categoryId = ViewData["categoryId"], searchString = ViewData["searchString"], pageNumber = i })">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+<!-- JavaScript for Auto-Submit -->
+<script>
+    function submitForm() {
+        document.getElementById("filterForm").submit();
+    }
+</script>

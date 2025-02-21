@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
@@ -12,40 +14,38 @@ namespace ExpenseTracker.Model
         [Column("UserID")]
         public int UserID { get; set; }
 
-        [Column("CategoryID")]
-        public int CategoryID { get; set; }
+        [Column("ExpenseCategoryID")] // Updated to match the database schema
+        public int ExpenseCategoryID { get; set; }
 
         [Column("PaymentModeID")]
         public int PaymentModeID { get; set; }
 
-        [Column(TypeName = "decimal(10, 2)")]
+        [Column(TypeName = "decimal(18, 2)")] // Updated precision to match the database
         public decimal Amount { get; set; }
-        //  public bool IsIncome { get; set; }
 
-        [Column(TypeName = "text")]
+        [Column(TypeName = "nvarchar(MAX)")]
         public string? Description { get; set; }
 
-        public DateOnly ExpenseDate { get; set; }
+        [Column(TypeName = "datetime2(7)")]
+        public DateTime ExpenseDate { get; set; }
 
-        [Column(TypeName = "datetime")]
-
-        public DateTime? CreatedAt { get; set; }
+        [Column(TypeName = "datetime2(7)")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [InverseProperty("Expense")]
         public virtual ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 
-        [ForeignKey("CategoryID")]
+        // Foreign key relationships
+        [ForeignKey("ExpenseCategoryID")]
         [InverseProperty("Expenses")]
-        public virtual ExpenseCategory Category { get; set; } = null!;
+        public virtual ExpenseCategory? Category { get; set; } = null!;
 
         [ForeignKey("UserID")]
         [InverseProperty("Expenses")]
-        public virtual User User { get; set; } = null!;
+        public virtual User? User { get; set; } = null!;
 
         [ForeignKey("PaymentModeID")]
         [InverseProperty("Expenses")]
-        public virtual Payment Payment { get; set; } = null!;
-
+        public virtual Payment? Payment { get; set; } = null!;
     }
-
 }
