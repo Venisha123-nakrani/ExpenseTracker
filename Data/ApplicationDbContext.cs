@@ -60,7 +60,7 @@ namespace ExpenseTracker.Data
             modelBuilder.Entity<ExpenseCategory>()
                .HasMany(ec => ec.Expenses)
                .WithOne(e => e.Category)
-               .HasForeignKey(e => e.CategoryID);
+               .HasForeignKey(e => e.ExpenseCategoryID);
 
             modelBuilder.Entity<Expense>()
                 .HasOne(e => e.Payment)

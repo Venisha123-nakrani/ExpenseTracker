@@ -11,16 +11,16 @@
     <input type="hidden" asp-for="ExpenseID" />
 
     <div class="form-group">
-        <label asp-for="CategoryID" class="control-label"></label>
-        <select asp-for="CategoryID" asp-items="ViewBag.CategoryID" class="form-control"></select>
+        <label asp-for="ExpenseCategoryID" class="control-label"></label>
+        <select asp-for="ExpenseCategoryID" asp-items="ViewBag.CategoryID" class="form-control"></select>
     </div>
     <div class="form-group">
         <label asp-for="PaymentModeID" class="control-label"></label>
         <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
     </div>
-    <div class="form-group">
-        <label asp-for="UserID" class="control-label"></label>
-        <input asp-for="UserID" class="form-control" />
+    <div class="form-group mb-3">
+        <label asp-for="UserID" class="form-label">User Email</label>
+        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
     </div>
     <div class="form-group">
         <label asp-for="Amount" class="control-label"></label>

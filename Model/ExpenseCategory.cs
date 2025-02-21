@@ -7,11 +7,11 @@ namespace ExpenseTracker.Model
     public partial class ExpenseCategory
     {
         [Key]
-        [Column("CategoryID")]
-        public int CategoryID { get; set; }
+        //[Column("CategoryID")]
+        public int ExpenseCategoryID { get; set; }
 
-        [StringLength(255)]
-        [Unicode(false)]
+        //[StringLength(255)]
+        //[Unicode(false)]
         public string Name { get; set; } = null!;
 
         [Column(TypeName = "text")]
@@ -20,13 +20,13 @@ namespace ExpenseTracker.Model
         [Column(TypeName = "datetime")]
         public DateTime? CreatedAt { get; set; }
 
-        [InverseProperty("Category")]
+        //[InverseProperty("Category")]
         public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
 
-        [InverseProperty("Category")]
+        //[InverseProperty("Category")]
         public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
 
-        [InverseProperty("Category")]
+       // [InverseProperty("Category")]
         public virtual ICollection<RecurringExpense> RecurringExpenses { get; set; } = new List<RecurringExpense>();
     }
 
