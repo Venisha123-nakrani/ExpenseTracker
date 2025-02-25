@@ -15,8 +15,6 @@ namespace ExpenseTracker.Controllers
 
         public IActionResult Index()
         {
-
-
             return View();
         }
         public IActionResult Dashboard()
