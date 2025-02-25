@@ -580,7 +580,7 @@ namespace ExpenseTracker.Migrations
                     b.HasOne("ExpenseTracker.Model.Payment", "Payment")
                         .WithMany("Expenses")
                         .HasForeignKey("PaymentModeID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ExpenseTracker.Model.User", "User")

@@ -58,6 +58,13 @@ namespace ExpenseTracker.Data
     .HasForeignKey(i => i.PaymentModeID)
     .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Expense>()
+                .HasOne(i => i.Payment)
+                .WithMany(p => p.Expenses)
+                .HasForeignKey(i => i.PaymentModeID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
         }
     }
 }

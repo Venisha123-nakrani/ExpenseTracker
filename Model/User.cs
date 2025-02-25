@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
 {
@@ -16,6 +17,8 @@ namespace ExpenseTracker.Model
         [Required]
         [PasswordPropertyText]
         public string PasswordHash { get; set; }
+        [NotMapped]
+        public string Password {  get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public ICollection<Expense> Expenses { get; set; }
