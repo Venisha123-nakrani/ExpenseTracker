@@ -1,20 +1,36 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExpenseTracker.Model
 {
-    public class Budget
+    public partial class Budget
     {
         [Key]
+        [Column("BudgetID")]
         public int BudgetID { get; set; }
-        public int UserID { get; set; }
-        public int CategoryID { get; set; }
-        public decimal Amount { get; set; }
-        public int Month { get; set; }
-        public int Year { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public User User { get; set; }
-        public ExpenseCategory Category { get; set; }
+        [Column("UserID")]
+        public int UserID { get; set; }
+        [Column("CategoryID")]
+        public int CategoryID { get; set; }
+
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal Amount { get; set; }
+
+        public int Month { get; set; }
+
+        public int Year { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? CreatedAt { get; set; }
+
+        [ForeignKey("CategoryID")]
+        [InverseProperty("Budgets")]
+        public virtual ExpenseCategory Category { get; set; } = null!;
+
+        [ForeignKey("UserID")]
+        [InverseProperty("Budgets")]
+        public virtual User User { get; set; } = null!;
 
     }
 }

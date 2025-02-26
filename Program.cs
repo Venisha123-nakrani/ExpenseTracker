@@ -10,15 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-//builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//builder.Services.AddIdentity<IdentityUser, IdentityRole>()  // Use User instead of IdentityUser
-//    .AddEntityFrameworkStores<ExpenseTrackerDbContext>()
-//    .AddDefaultTokenProviders();
+builder.Services.AddSession();
 
+// Configure Database
 
-//Configure Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -34,7 +30,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Login/AccessDenied";
 });
 
-builder.Services.AddSession();
+
 
 
 // Retrieve JWT secret from configuration or use default.
@@ -72,15 +68,16 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication(); // Enable authentication middleware
-app.UseSession();
+
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Login}/{id?}");
 
 app.Run();

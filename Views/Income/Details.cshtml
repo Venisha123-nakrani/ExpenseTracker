@@ -1,0 +1,17 @@
+﻿@model ExpenseTracker.Model.Income
+
+<h2>Income Details</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Category: @Model.IncomeCategory.CategoryName</h5>
+        <p class="card-text"><strong>Amount:</strong> @Model.Amount</p>
+        <p class="card-text"><strong>Description:</strong> @Model.Description</p>
+        <p class="card-text"><strong>Income Date:</strong> @Model.IncomeDate.ToString("yyyy-MM-dd")</p>
+        <p class="card-text"><strong>Payment Mode:</strong> @Model.Payment.Name</p>
+        <p class="card-text"><strong>User:</strong> @Model.User.Email</p>
+        <p class="card-text"><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+        <a asp-action="Edit" asp-route-id="@Model.IncomeID" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>

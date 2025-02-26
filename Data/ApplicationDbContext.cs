@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Model;
 using System;
-using ExpenseTracker.Model;
 
 namespace ExpenseTracker.Data
 {
@@ -53,17 +52,21 @@ namespace ExpenseTracker.Data
                 .HasForeignKey(i => i.IncomeCategoryID);
 
             modelBuilder.Entity<Income>()
-    .HasOne(i => i.Payment)
-    .WithMany(p => p.Incomes)
-    .HasForeignKey(i => i.PaymentModeID)
-    .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Expense>()
                 .HasOne(i => i.Payment)
-                .WithMany(p => p.Expenses)
+                .WithMany(p => p.Incomes)
                 .HasForeignKey(i => i.PaymentModeID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<ExpenseCategory>()
+               .HasMany(ec => ec.Expenses)
+               .WithOne(e => e.Category)
+               .HasForeignKey(e => e.ExpenseCategoryID);
+
+            modelBuilder.Entity<Expense>()
+                .HasOne(e => e.Payment)
+                .WithMany(p => p.Expenses)
+                .HasForeignKey(e => e.PaymentModeID)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

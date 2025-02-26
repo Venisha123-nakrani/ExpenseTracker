@@ -1,0 +1,39 @@
+﻿@model ExpenseTracker.Model.Income
+
+<h2>Edit Income</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IncomeID" />
+
+    <div class="form-group mb-3">
+        <label asp-for="IncomeCategoryID" class="form-label"></label>
+        <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-select"></select>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="PaymentModeID" class="form-label"></label>
+        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-select"></select>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="UserID" class="form-label">User Email</label>
+        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Amount" class="form-label"></label>
+        <input asp-for="Amount" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="IncomeDate" class="form-label"></label>
+        <input asp-for="IncomeDate" class="form-control" type="date" />
+        <span asp-validation-for="IncomeDate" class="text-danger"></span>
+    </div>
+    <div class="form-group mt-3">
+        <input type="submit" value="Save Changes" class="btn btn-warning" />
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</form>

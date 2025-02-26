@@ -15,16 +15,33 @@ namespace ExpenseTracker.Controllers
 
         public IActionResult Index()
         {
+            // Retrieve the logged-in user's email from session
+
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+
+            ViewData["UserEmail"] = userEmail;
+
+
             return View();
         }
+
         public IActionResult Dashboard()
         {
             // Retrieve the logged-in user's email from session
             var userEmail = HttpContext.Session.GetString("UserEmail");
             ViewData["UserEmail"] = userEmail;
-
             return View();
         }
+
+
+        public IActionResult Edit()
+
+        {
+
+            return View();
+
+        }
+
 
         public IActionResult Privacy()
         {
