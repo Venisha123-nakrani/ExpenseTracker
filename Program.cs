@@ -10,9 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddSession();
 
 // Configure Database
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -27,6 +29,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Login/Login";
     options.AccessDeniedPath = "/Login/AccessDenied";
 });
+
+
+
 
 // Retrieve JWT secret from configuration or use default.
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-256-bit-secret";
@@ -70,8 +75,9 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication(); // Enable authentication middleware
 
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Login}/{action=Login}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

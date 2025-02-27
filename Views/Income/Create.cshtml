@@ -14,11 +14,12 @@
             color: #ffffff;
             background-color: #d61919;
             border-color: #d61919;
+            margin-top: 75px;
         }
     </style>
 </head>
 <body>
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" class="income">
         <div class="form-group">
             <label asp-for="IncomeCategoryID" class="control-label"></label>
             <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-control"></select>

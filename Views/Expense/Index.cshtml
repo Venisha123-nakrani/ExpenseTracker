@@ -1,9 +1,14 @@
 ﻿@model IEnumerable<ExpenseTracker.Model.Expense>
 
 <h2>Expense List</h2>
+<style>
+    .income {
+        margin-top: 75px;
+    }
+</style>
 
 <!-- Search & Filters -->
-<form method="get" asp-action="Index" id="filterForm" class="row g-3 mb-3 d-flex align-items-end">
+<form method="get" asp-action="Index" id="filterForm" class="income row g-3 mb-3 d-flex align-items-end">
     <div class="col-lg-9 col-md-8 col-sm-12">
         <input type="text" name="searchString" id="searchString" value="@ViewData["searchString"]"
                class="form-control" placeholder="Search...">

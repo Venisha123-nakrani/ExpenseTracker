@@ -2,7 +2,12 @@
 
 <h2>Create Expense</h2>
 
-<form asp-action="Create" method="post">
+<style>
+    .income {
+        margin-top: 75px;
+    }
+</style>
+<form asp-action="Create" method="post" class="income">
     <div class="form-group">
         <label asp-for="ExpenseCategoryID" class="control-label"></label>
         <select asp-for="ExpenseCategoryID" class="form-control" id="categoryDropdown">
