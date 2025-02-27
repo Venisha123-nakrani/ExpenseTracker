@@ -17,7 +17,7 @@ namespace ExpenseTracker.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -28,12 +28,9 @@ namespace ExpenseTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("AttachmentID");
-;
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttachmentID"));
 
-       
-       
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime");
 
@@ -46,7 +43,6 @@ namespace ExpenseTracker.Migrations
                         .HasMaxLength(500)
                         .IsUnicode(false)
                         .HasColumnType("varchar(500)");
-
 
                     b.HasKey("AttachmentID");
 
@@ -62,12 +58,10 @@ namespace ExpenseTracker.Migrations
                         .HasColumnType("int")
                         .HasColumnName("BudgetID");
 
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BudgetID"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
+                        .HasColumnType("decimal(10, 2)");
 
                     b.Property<int>("CategoryID")
                         .HasColumnType("int")
@@ -75,7 +69,6 @@ namespace ExpenseTracker.Migrations
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime");
-
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
@@ -102,7 +95,6 @@ namespace ExpenseTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("ExpenseID");
-
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpenseID"));
 
@@ -133,7 +125,6 @@ namespace ExpenseTracker.Migrations
                     b.HasKey("ExpenseID");
 
                     b.HasIndex("ExpenseCategoryID");
-
 
                     b.HasIndex("PaymentModeID");
 
@@ -167,7 +158,6 @@ namespace ExpenseTracker.Migrations
 
             modelBuilder.Entity("ExpenseTracker.Model.ExpenseReport", b =>
                 {
-
                     b.Property<int>("ReportID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -192,7 +182,6 @@ namespace ExpenseTracker.Migrations
                         .HasColumnName("UserID");
 
                     b.HasKey("ReportID");
-
 
                     b.HasIndex("UserID");
 
@@ -286,7 +275,6 @@ namespace ExpenseTracker.Migrations
 
             modelBuilder.Entity("ExpenseTracker.Model.RecurringExpense", b =>
                 {
-
                     b.Property<int>("RecurringID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -334,7 +322,6 @@ namespace ExpenseTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("UserID");
-
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
 

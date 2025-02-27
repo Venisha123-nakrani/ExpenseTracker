@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace ExpenseTracker.Model
 {
     public class Payment
@@ -21,6 +20,5 @@ namespace ExpenseTracker.Model
         [InverseProperty("Payment")]
         public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
         public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
-
     }
 }

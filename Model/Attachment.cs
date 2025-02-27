@@ -24,4 +24,5 @@ namespace ExpenseTracker.Model
         [InverseProperty("Attachments")]
         public virtual Expense Expense { get; set; } = null!;
     }
+
 }

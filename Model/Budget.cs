@@ -31,6 +31,5 @@ namespace ExpenseTracker.Model
         [ForeignKey("UserID")]
         [InverseProperty("Budgets")]
         public virtual User User { get; set; } = null!;
-
     }
 }

@@ -43,4 +43,5 @@ namespace ExpenseTracker.Model
         [InverseProperty("User")]
         public virtual ICollection<RecurringExpense> RecurringExpenses { get; set; } = new List<RecurringExpense>();
     }
+
 }

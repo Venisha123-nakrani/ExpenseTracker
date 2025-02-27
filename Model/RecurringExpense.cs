@@ -37,4 +37,5 @@ namespace ExpenseTracker.Model
         [InverseProperty("RecurringExpenses")]
         public virtual User User { get; set; } = null!;
     }
+
 }

@@ -1,13 +1,10 @@
-﻿using ExpenseTracker.Migrations;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 
 namespace ExpenseTracker.Model
 {
     public class IncomeCategory
     {
-
         [Key]
         [Column("IncomeCategoryID")]
         public int IncomeCategoryID { get; set; }

@@ -47,6 +47,5 @@ namespace ExpenseTracker.Model
         [ForeignKey("PaymentModeID")]
         [InverseProperty("Expenses")]
         public virtual Payment? Payment { get; set; } = null!;
-
     }
 }

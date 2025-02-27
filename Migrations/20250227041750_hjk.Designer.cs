@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250218072003_seedingData")]
-    partial class seedingData
+    [Migration("20250227041750_hjk")]
+    partial class hjk
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -102,20 +102,20 @@ namespace ExpenseTracker.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpenseID"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(10, 2)");
+                        .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int>("CategoryID")
-                        .HasColumnType("int")
-                        .HasColumnName("CategoryID");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2(7)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(MAX)");
 
-                    b.Property<DateOnly>("ExpenseDate")
-                        .HasColumnType("date");
+                    b.Property<int>("ExpenseCategoryID")
+                        .HasColumnType("int")
+                        .HasColumnName("ExpenseCategoryID");
+
+                    b.Property<DateTime>("ExpenseDate")
+                        .HasColumnType("datetime2(7)");
 
                     b.Property<int>("PaymentModeID")
                         .HasColumnType("int")
@@ -127,7 +127,7 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("ExpenseID");
 
-                    b.HasIndex("CategoryID");
+                    b.HasIndex("ExpenseCategoryID");
 
                     b.HasIndex("PaymentModeID");
 
@@ -138,12 +138,11 @@ namespace ExpenseTracker.Migrations
 
             modelBuilder.Entity("ExpenseTracker.Model.ExpenseCategory", b =>
                 {
-                    b.Property<int>("CategoryID")
+                    b.Property<int>("ExpenseCategoryID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("CategoryID");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpenseCategoryID"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime");
@@ -153,11 +152,9 @@ namespace ExpenseTracker.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CategoryID");
+                    b.HasKey("ExpenseCategoryID");
 
                     b.ToTable("ExpenseCategories");
                 });
@@ -605,7 +602,7 @@ namespace ExpenseTracker.Migrations
                 {
                     b.HasOne("ExpenseTracker.Model.ExpenseCategory", "Category")
                         .WithMany("Expenses")
-                        .HasForeignKey("CategoryID")
+                        .HasForeignKey("ExpenseCategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

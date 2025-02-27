@@ -7,7 +7,14 @@
 
 <h2>Edit Expense</h2>
 
-<form asp-action="Edit" method="post">
+
+<style>
+    .income {
+        margin-top: 75px;
+    }
+</style>
+
+<form asp-action="Edit" method="post" class="income">
     <input type="hidden" asp-for="ExpenseID" />
 
     <div class="form-group">
