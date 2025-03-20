@@ -23,6 +23,8 @@ namespace ExpenseTracker.Data
         public DbSet<Income> Incomes { get; set; }
         public DbSet<IncomeCategory> IncomeCategories { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<UserActivity> UserActivities { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -60,7 +62,7 @@ namespace ExpenseTracker.Data
             modelBuilder.Entity<ExpenseCategory>()
                .HasMany(ec => ec.Expenses)
                .WithOne(e => e.Category)
-               .HasForeignKey(e => e.CategoryID);
+               .HasForeignKey(e => e.ExpenseCategoryID);
 
             modelBuilder.Entity<Expense>()
                 .HasOne(e => e.Payment)

@@ -1,0 +1,121 @@
+﻿@model IEnumerable<ExpenseTracker.Model.Budget>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Budgets";
+    int currentYear = DateTime.Now.Year;
+}
+
+
+
+<div class="IndexBdgt">
+    <h2>Budgets</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Search & Filter Form -->
+    <form method="get" asp-action="Index" id="filterForm" class="row g-3 mb-3">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <label for="categoryId" class="form-label">Category:</label>
+            <select name="categoryId" id="categoryId" class="form-select" onchange="submitForm()">
+                <option value="">All Categories</option>
+                @foreach (var category in (SelectList)ViewData["Categories"])
+                {
+                    <option value="@category.Value" selected="@(Context.Request.Query["categoryId"] == category.Value ? "selected" : null)">@category.Text</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-12">
+            <label for="month" class="form-label">Month:</label>
+            <select name="month" id="month" class="form-select" onchange="submitForm()">
+                <option value="">All Months</option>
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i" selected="@(Context.Request.Query["month"] == i.ToString() ? "selected" : null)">
+                        @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-12">
+            <label for="year" class="form-label">Year:</label>
+            <select name="year" id="year" class="form-select" onchange="submitForm()">
+                <option value="">All Years</option>
+                @for (int i = currentYear - 10; i <= currentYear + 10; i++)
+                {
+                    <option value="@i" selected="@(Context.Request.Query["year"] == i.ToString() ? "selected" : null)">@i</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Apply</button>
+        </div>
+    </form>
+
+    <!-- Add New Budget Button -->
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Create" class="btn btn-success">Add New Budget</a>
+    </div>
+
+    <!-- Budgets Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Month</th>
+                    <th>Year</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Category.Name</td>
+                        <td>₹@item.Amount.ToString("N2")</td>
+                        <td>@(item.Month != 0 ? System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(item.Month) : "Yearly Budget")</td>
+                        <td>@item.Year</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.BudgetID" class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@item.BudgetID" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (ViewData["TotalPages"] != null)
+    {
+        int totalPages = (int)ViewData["TotalPages"];
+        int currentPage = (int)ViewData["CurrentPage"];
+
+        <nav aria-label="Budget Pagination">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { categoryId = ViewData["categoryId"], month = ViewData["month"], year = ViewData["year"], pageNumber = i })">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+<script>
+    function submitForm() {
+        document.getElementById("filterForm").submit();
+    }
+</script>

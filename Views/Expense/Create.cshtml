@@ -1,49 +1,186 @@
 ﻿@model Expense
 
-<h2>Create Expense</h2>
 
-<form asp-action="Create" method="post">
+
+<form asp-action="Create" method="post" class="expense">
+
+    <h2>Create Expense</h2>
+
     <div class="form-group">
-        <label asp-for="CategoryID" class="control-label"></label>
-        <select asp-for="CategoryID" class="form-control" id="categoryDropdown">
+        <label class="control-label">User Email</label>
+        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
+    </div>
+
+
+    <div class="form-group">
+        <label asp-for="ExpenseCategoryID" class="control-label"></label>
+        <select asp-for="ExpenseCategoryID" class="form-control" id="categoryDropdown" required>
             <option value="">-- Select Category --</option>
-            @foreach (var category in ViewBag.CategoryID as List<SelectListItem>)
+            @if (ViewBag.CategoryID != null && ViewBag.CategoryID is List<SelectListItem>)
             {
-                <option value="@category.Value">@category.Text</option>
+                @foreach (var category in ViewBag.CategoryID as List<SelectListItem>)
+                {
+                    <option value="@category.Value">@category.Text</option>
+                }
             }
-            <option value="Other">Other</option> <!-- "Other" is included only once -->
+
+            <option value="Other">Other</option>
         </select>
     </div>
+
+
     <div class="form-group">
         <label asp-for="PaymentModeID" class="control-label"></label>
-        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
+        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control" required></select>
     </div>
-    <div class="form-group">
-        <label asp-for="UserID" class="control-label"></label>
-        <input asp-for="UserID" class="form-control" />
-        <span asp-validation-for="UserID" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Amount" class="control-label"></label>
-        <input asp-for="Amount" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <input asp-for="Description" class="form-control" />
-    </div>
+
     <div class="form-group">
         <label asp-for="ExpenseDate" class="control-label"></label>
-        <input asp-for="ExpenseDate" class="form-control" type="date" />
+        <input asp-for="ExpenseDate" id="expenseDate" class="form-control" type="date" required />
     </div>
+
+    <div class="form-group">
+        <label asp-for="Amount" class="control-label"></label>
+        <input asp-for="Amount" id="expenseAmount" class="form-control" type="number" min="1" required />
+        <small id="budgetMessage" class="text-danger"></small>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <input asp-for="Description" class="form-control"   />
+    </div>
+
     <div class="form-group mt-2">
-        <input type="submit" value="Create" class="btn btn-primary" />
+        <input type="submit" value="Create" class="btn btn-primary" id="submitButton" />
+        <a asp-action="Index" class="btn btn-danger btn-sm">Back to List</a>
     </div>
 </form>
-
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("categoryDropdown").addEventListener("change", function () {
+            handleBudgetFetch(false);
+        });
+
+        document.getElementById("expenseDate").addEventListener("change", function () {
+            handleBudgetFetch(false);
+        });
+
+        document.getElementById("expenseAmount").addEventListener("input", function () {
+            validateExpense();
+        });
+
+        // document.getElementById("submitButton").addEventListener("click", function (event) {
+        //     event.preventDefault(); // Prevent form submission until validation is done
+        //     handleBudgetFetch(true);
+        // });
+    });
+
+    let currentBudget = 0;
+    let totalSpent = 0;
+
+    function handleBudgetFetch(validate = false) {
+        let categoryId = document.getElementById("categoryDropdown").value;
+        let expenseDate = document.getElementById("expenseDate").value;
+
+        if (!categoryId || !expenseDate) {
+            return;
+        }
+
+        let dateObj = new Date(expenseDate);
+        let year = dateObj.getFullYear();
+        let month = dateObj.getMonth() + 1;
+
+        fetch(`/Expense/GetCategoryBudget?categoryId=${categoryId}&year=${year}&month=${month}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch budget data.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    currentBudget = data.budget;
+                    totalSpent = data.spent;
+                    if (validate) {
+                        validateExpense(true);
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching budget:", error);
+                alert("An error occurred while fetching budget data.");
+            });
+    }
+
+        function validateExpense() {
+        let amountInput = document.getElementById("expenseAmount");
+        let submitButton = document.getElementById("submitButton");
+        let budgetMessage = document.getElementById("budgetMessage");
+
+        let amount = parseFloat(amountInput.value) || 0;
+        let totalAfterThisExpense = totalSpent + amount; // Consider already spent amount
+        let remainingBudget = currentBudget - totalSpent;
+        let seventyPercentBudget = 0.7 * currentBudget;
+
+        // Reset messages and button state
+        budgetMessage.textContent = "";
+        submitButton.disabled = false;
+
+        if (currentBudget > 0) {
+            if (amount > remainingBudget) {
+                budgetMessage.textContent = `❌ Error: You cannot exceed the total budget of ₹${currentBudget}. Remaining: ₹${remainingBudget}.`;
+                submitButton.disabled = true; // Disable submit button
+                return false;
+            }
+            else if (totalAfterThisExpense > seventyPercentBudget) {
+                // Check if total spent + new amount exceeds 70%
+                budgetMessage.textContent = "⚠️ Warning: Your total expenses for this category have exceeded 70% of your budget!";
+            } else {
+                budgetMessage.textContent = ""; // Clear message if within a safe range
+            }
+        }
+
+        return true;
+    }
+
+    // Revalidate on every input to ensure warnings persist
+    document.getElementById("expenseAmount").addEventListener("input", validateExpense);
+
+    // Ensure form submission is blocked if validation fails
+    document.querySelector("form").addEventListener("submit", function (event) {
+        if (!validateExpense()) {
+            event.preventDefault(); // Stop submission if validation fails
+        }
+    });
+
+    // Ensure form submission is properly handled
+    document.querySelector("form").addEventListener("submit", function (event) {
+        if (!validateExpense()) {
+            event.preventDefault(); // Stop submission if validation fails
+        }
+    });
+
+
+
     document.getElementById('categoryDropdown').addEventListener('change', function () {
         if (this.value === 'Other') {
-            window.location.href = '/ExpenseCategory/Create'; // Redirect to Create Category page
+            window.location.href = '/ExpenseCategory/Create';
         }
     });
 </script>
+
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["WarningMessage"]
+    </div>
+}

@@ -1,55 +1,505 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ExpenseTracker</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ExpenseTracker.styles.css" asp-append-version="true" />
+    <!-- Favicons -->
+    <link href="~/assets_db/img/favicon.png" rel="icon">
+    <link href="~/assets_db/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="~/assets_db/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/assets_db/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="~/assets_db/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="~/assets_db/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="~/assets_db/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="~/assets_db/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="~/assets_db/vendor/simple-datatables/style.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="~/assets_db/css/style.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <!-- for theme -->
+    <link href="~/css/site.css" rel="stylesheet" />
+
+    <style>
+       
+        /* Sidebar */
+        #sidebar {
+            width: 250px; /* Sidebar width */
+            position: fixed;
+            height: calc(100vh - 60px); /* Adjust for navbar height */
+            top: 60px; /* Push below the navbar */
+            left: 0;
+            background: #ffffff; /* Sidebar background */
+            overflow-y: auto; /* Allow sidebar scrolling if needed */
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(0); /* Default visible */
+        }
+
+            #sidebar.hide {
+                transform: translateX(-100%);
+            }
+
+        /* Adjust the main content to start after sidebar */
+        .container {
+            margin-left: 225px; /* Match sidebar width */
+            padding-top: 80px; /* Adjust for navbar height */
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Navbar */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px; /* Adjust height as needed */
+            background: #ffffff; /* Adjust as per design */
+            z-index: 1000; /* Ensure navbar is above everything */
+        }
+
+        /* Main content */
+        main {
+            padding: 20px;
+        }
+
+    </style>
+
 </head>
 
 <body>
     @* Hide navbar if on Registration or Login page *@
-    @if (Context.Request.RouteValues["controller"]?.ToString() != "Registration" &&
+    @if (Context.Request.RouteValues["controller"]?.ToString() != "Home" && Context.Request.RouteValues["controller"]?.ToString() != "Registration" &&
     Context.Request.RouteValues["controller"]?.ToString() != "Login")
     {
-        <header>
-            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-                <div class="container-fluid">
-                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ExpenseTracker</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                        <ul class="navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+        @if (User.Identity.IsAuthenticated)
+            {
+                var userEml= User.FindFirstValue(ClaimTypes.Email);
+                ViewData["UserEmail"] = userEml;
+
+            }
+        <header id="header" class="header fixed-top d-flex align-items-center">
+
+            <div class="d-flex align-items-center justify-content-between">
+                <a href="index.html" class="logo d-flex align-items-center">
+                    <img src="~/assets_dp/img/logo.png" alt="">
+                    <span class="d-none d-lg-block">ExpenseTracker</span>
+                </a>
+                <i class="bi bi-list toggle-sidebar-btn"></i>
+            </div><!-- End Logo -->
+
+            <div class="search-bar">
+                <form class="search-form d-flex align-items-center" method="POST" action="#">
+                    <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+                    <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+                </form>
+            </div><!-- End Search Bar -->
+
+            <nav class="header-nav ms-auto">
+                <ul class="d-flex align-items-center">
+
+                    <li class="nav-item d-block d-lg-none">
+                        <a class="nav-link nav-icon search-bar-toggle " href="#">
+                            <i class="bi bi-search"></i>
+                        </a>
+                    </li><!-- End Search Icon-->
+
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-bell"></i>
+                            <span class="badge bg-primary badge-number">4</span>
+                        </a><!-- End Notification Icon -->
+
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+                            <li class="dropdown-header">
+                                You have 4 new notifications
+                                <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Income" asp-action="Index">Incomes</a>
+
+                            <li class="notification-item">
+                                <i class="bi bi-exclamation-circle text-warning"></i>
+                                <div>
+                                    <h4>Lorem Ipsum</h4>
+                                    <p>Quae dolorem earum veritatis oditseno</p>
+                                    <p>30 min. ago</p>
+                                </div>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Expense" asp-action="Index">Expense</a>
+
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
-                            <li class="nav-item">
-                                <!-- Logout button wrapped in a form to post the logout request -->
-                                <form asp-controller="Login" asp-action="Logout" method="post" id="logoutForm" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="nav-link btn btn-link text-dark" style="border: none; background: none;">
-                                        Logout
-                                    </button>
-                                </form>
+
+                            <li class="notification-item">
+                                <i class="bi bi-x-circle text-danger"></i>
+                                <div>
+                                    <h4>Atque rerum nesciunt</h4>
+                                    <p>Quae dolorem earum veritatis oditseno</p>
+                                    <p>1 hr. ago</p>
+                                </div>
                             </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li class="notification-item">
+                                <i class="bi bi-check-circle text-success"></i>
+                                <div>
+                                    <h4>Sit rerum fuga</h4>
+                                    <p>Quae dolorem earum veritatis oditseno</p>
+                                    <p>2 hrs. ago</p>
+                                </div>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li class="notification-item">
+                                <i class="bi bi-info-circle text-primary"></i>
+                                <div>
+                                    <h4>Dicta reprehenderit</h4>
+                                    <p>Quae dolorem earum veritatis oditseno</p>
+                                    <p>4 hrs. ago</p>
+                                </div>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li class="dropdown-footer">
+                                <a href="#">Show all notifications</a>
+                            </li>
+
+                        </ul><!-- End Notification Dropdown Items -->
+
+                    </li><!-- End Notification Nav -->
+
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span class="badge bg-success badge-number">3</span>
+                        </a><!-- End Messages Icon -->
+
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
+                            <li class="dropdown-header">
+                                You have 3 new messages
+                                <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li class="message-item">
+                                <a href="#">
+                                    <img src="~/assets_dp/img/messages-1.jpg" alt="" class="rounded-circle">
+                                    <div>
+                                        <h4>Maria Hudson</h4>
+                                        <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                                        <p>4 hrs. ago</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li class="message-item">
+                                <a href="#">
+                                    <img src="~/assets_dp/img/messages-2.jpg" alt="" class="rounded-circle">
+                                    <div>
+                                        <h4>Anna Nelson</h4>
+                                        <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                                        <p>6 hrs. ago</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li class="message-item">
+                                <a href="#">
+                                    <img src="~/assets_dp/img/messages-3.jpg" alt="" class="rounded-circle">
+                                    <div>
+                                        <h4>David Muldon</h4>
+                                        <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                                        <p>8 hrs. ago</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li class="dropdown-footer">
+                                <a href="#">Show all messages</a>
+                            </li>
+
+                        </ul><!-- End Messages Dropdown Items -->
+
+                    </li><!-- End Messages Nav -->
+
+                    <li class="nav-item dropdown pe-3">
+                        @{
+                            var userImage = Context.Session.GetString("UserImage") ?? "/images/default-user.png";
+                        }
+                        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                            <img src="@userImage" class="profile-img rounded-circle" width="40" height="40" />
+                            <span class="d-none d-md-block dropdown-toggle ps-2">@ViewData["UserEmail"]</span>
+                        </a><!-- End Profile Iamge Icon -->
+
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                            @{
+                                var userEmail = Context.Session.GetString("UserEmail") ?? "Guest";
+                            }
+                            <li class="dropdown-header">
+                                <h6>@ViewData["UserEmail"]</h6>
+                                <span></span>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" asp-controller="UserProfile" asp-action="Index">
+                                    <i class="bi bi-person"></i>
+                                    <span>My Profile</span>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" asp-controller="UserProfile" asp-action="Edit">
+                                    <i class="bi bi-gear"></i>
+                                    <span>Account Settings</span>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" asp-controller="NeedHelp" asp-action="Index">
+                                    <i class="bi bi-question-circle"></i>
+                                    <span>Need Help?</span>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <!-- Theme Selector -->
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center">
+                                    <i class="bi bi-palette"></i>
+                                    <span>Theme</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <select id="themeSelector" class="form-select mx-3 my-2">
+                                    <option value="light">☀️ Light Mode</option>
+                                    <option value="dark">🌙 Dark Mode</option>
+                                    <option value="blue">💙 Cool Blue</option>
+                                    <option value="green">🌿 Green Theme</option>
+                                </select>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" asp-controller="Login" asp-action="Logout">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Sign Out</span>
+                                </a>
+                            </li>
+
+
+
+                        </ul><!-- End Profile Dropdown Items -->
+                    </li><!-- End Profile Nav -->
+
+                </ul>
+            </nav><!-- End Icons Navigation -->
+
         </header>
+
+        <script>
+            //Theme Selector
+                    document.addEventListener("DOMContentLoaded", function () {
+                let themeSelector = document.getElementById("themeSelector");
+                let currentTheme = localStorage.getItem("theme") || "light";
+
+                // Apply the selected theme
+                function applyTheme(theme) {
+                    let root = document.documentElement;
+                    switch (theme) {
+                        case "dark":
+                            root.style.setProperty("--bg-color", "#121212");
+                            root.style.setProperty("--card-bg", "#1E1E1E");
+                            root.style.setProperty("--text-color", "#FFFFFF");
+                            break;
+                        case "light":
+                            root.style.setProperty("--bg-color", "#F4F4F4");
+                            root.style.setProperty("--card-bg", "#FFFFFF");
+                            root.style.setProperty("--text-color", "#333333");
+                            break;
+                        case "blue":
+                            root.style.setProperty("--bg-color", "#E3F2FD");
+                            root.style.setProperty("--card-bg", "#FFFFFF");
+                            root.style.setProperty("--text-color", "#0D47A1");
+                            break;
+                        case "green":
+                            root.style.setProperty("--bg-color", "#E8F5E9");
+                            root.style.setProperty("--card-bg", "#FFFFFF");
+                            root.style.setProperty("--text-color", "#1B5E20");
+                            break;
+                    }
+                    localStorage.setItem("theme", theme);
+                }
+
+                // Apply the theme from localStorage
+                applyTheme(currentTheme);
+                themeSelector.value = currentTheme;
+
+                // Change theme on selection
+                themeSelector.addEventListener("change", function () {
+                    applyTheme(this.value);
+                });
+            });
+
+        </script>
+
+        <!-- End Header -->
+
+
+
+        <aside id="sidebar" class="col-md-2 col-lg-2 sidebar">
+
+            <ul class="sidebar-nav" id="sidebar-nav">
+                <li class="nav-item mb-3">
+                    <a class="nav-link" asp-controller="Home" asp-action="Dashboard">
+                        <i class="bi bi-grid"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" asp-controller="Income" asp-action="Index">
+                        <i class="bi bi-grid"></i>
+                        <span>Income</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" asp-controller="Expense" asp-action="Index">
+                        <i class="bi bi-grid"></i>
+                        <span>Expense</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" asp-controller="Budget" asp-action="Index">
+                        <i class="bi bi-grid"></i>
+                        <span>Budget</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" asp-controller="Report" asp-action="Index">
+                        <i class="bi bi-grid"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+
+
+                @*  <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-gem"></i><span>Icons</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a href="icons-bootstrap.html">
+                            <i class="bi bi-circle"></i><span>Bootstrap Icons</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="icons-remix.html">
+                            <i class="bi bi-circle"></i><span>Remix Icons</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="icons-boxicons.html">
+                            <i class="bi bi-circle"></i><span>Boxicons</span>
+                        </a>
+                    </li>
+                </ul>
+            </li><!-- End Icons Nav -->
+
+            <li class="nav-heading">Pages</li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="users-profile.html">
+                    <i class="bi bi-person"></i>
+                    <span>Profile</span>
+                </a>
+            </li><!-- End Profile Page Nav -->
+
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="pages-register.html">
+                    <i class="bi bi-card-list"></i>
+                    <span>Register</span>
+                </a>
+            </li><!-- End Register Page Nav -->
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="pages-login.html">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Login</span>
+                </a>
+            </li><!-- End Login Page Nav --> *@
+
+                @*   <li class="nav-item">
+                <a class="nav-link collapsed" href="pages-error-404.html">
+                    <i class="bi bi-dash-circle"></i>
+                    <span>Error 404</span>
+                </a>
+            </li><!-- End Error 404 Page Nav -->
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="pages-blank.html">
+                    <i class="bi bi-file-earmark"></i>
+                    <span>Blank</span>
+                </a>
+            </li><!-- End Blank Page Nav --> *@
+
+            </ul>
+
+        </aside>
+
+        <!-- End Sidebar-->
+
+        <form>
+             <div>
+
+             </div>
+        </form>
     }
 
     <div class="container">
@@ -66,16 +516,66 @@
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - ExpenseTracker - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    @if (Context.Request.RouteValues["controller"]?.ToString() != "Home" || Context.Request.RouteValues["action"]?.ToString() != "Dashboard")
+    {
+    <footer id="footer" class="footer">
+        <div class="copyright">
+            &copy; Copyright <strong><span>ExpenseTracker</span></strong>. All Rights Reserved
         </div>
-    </footer>
+        <div class="credits">
+            <!-- All the links in the footer should remain intact. -->
+            <!-- You can delete the links only if you purchased the pro version. -->
+            <!-- Licensing information: https://bootstrapmade.com/license/ -->
+            <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
+            Designed by Venisha, Gracy & Namrata
+        </div>
+    </footer><!-- End Footer -->
+    }
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Vendor JS Files -->
+    <script src="~/assets_db/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="~/assets_db/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets_db/vendor/chart.js/chart.umd.js"></script>
+    <script src="~/assets_db/vendor/echarts/echarts.min.js"></script>
+    <script src="~/assets_db/vendor/quill/quill.js"></script>
+    <script src="~/assets_db/vendor/simple-datatables/simple-datatables.js"></script>
+    <script src="~/assets_db/vendor/tinymce/tinymce.min.js"></script>
+    <script src="~/assets_db/vendor/php-email-form/validate.js"></script>
+
+    <script>
+
+        //       window.onload = function() {
+        //     fetch('/Login/CheckSession')
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.isAuthenticated) {
+        //                 window.location.href = "/Home/Dashboard"; // Redirect to Dashboard
+        //             }
+        //         });
+        // };
+
+                document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.getElementById("sidebar");
+            const toggleBtn = document.querySelector(".toggle-sidebar-btn");
+
+            // Toggle sidebar when button is clicked
+            toggleBtn.addEventListener("click", function () {
+                sidebar.classList.toggle("hide");
+            });
+
+            // Hide sidebar when clicking outside
+            document.addEventListener("click", function (event) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                    sidebar.classList.add("hide");
+                }
+            });
+        });
+
+    </script>
+    <!-- Template Main JS File -->
+    <script src="~/assets_db/js/main.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

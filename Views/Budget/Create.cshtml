@@ -1,0 +1,97 @@
+﻿@model ExpenseTracker.Model.Budget
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Create Budget";
+    int currentYear = DateTime.Now.Year;
+    int nextYear = currentYear + 1;
+    int currentMonth = DateTime.Now.Month;
+}
+
+
+
+<form asp-action="Create" method="post" class="CrteBdgt">
+    <h2>Create Budget</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="mb-3">
+        <label class="control-label">User</label>
+        <input value="@ViewData["UserEmail"]" class="form-control" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label for="Year" class="form-label">Year</label>
+        <select asp-for="Year" class="form-select" id="budgetYear" required>
+            <option value="@currentYear">@currentYear</option>
+            <option value="@nextYear">@nextYear</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="Month" class="form-label">Month (Optional for Yearly Budget)</label>
+        <select asp-for="Month" class="form-select" id="budgetMonth">
+            <option value="0">-- Set for Whole Year --</option>
+            @for (int i = 1; i <= 12; i++)
+            {
+                if (i < currentMonth)
+                {
+                    continue; // Skip past months if selecting current year
+                }
+                <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Total Income (Selected Month & Year)</label>
+        <input id="UserIncome" value="@ViewData["UserIncome"]" class="form-control" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryID" class="control-label">Category</label>
+        <select asp-for="CategoryID" class="form-control" required>
+            <option value="">-- Select Category --</option>
+            @foreach (var category in ViewBag.ExpenseCategoryID as List<SelectListItem>)
+            {
+                <option value="@category.Value">@category.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="Amount" class="form-label">Budget Amount</label>
+        <input asp-for="Amount" type="number" class="form-control" required min="1" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+<script>
+    document.getElementById("budgetYear").addEventListener("change", updateIncome);
+    document.getElementById("budgetMonth").addEventListener("change", updateIncome);
+
+    function updateIncome() {
+        let selectedYear = document.getElementById("budgetYear").value;
+        let selectedMonth = document.getElementById("budgetMonth").value;
+
+        if (selectedMonth == 0) return; // Skip fetching for yearly budget
+
+        fetch(`/Budget/GetIncomeForMonthYear?year=${selectedYear}&month=${selectedMonth}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("UserIncome").value = data.income;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error("Error fetching income:", error));
+    }
+</script>

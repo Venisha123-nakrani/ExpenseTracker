@@ -1,0 +1,56 @@
+﻿@model ExpenseTracker.Model.Budget
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Edit Budget";
+}
+
+<div class="Edt">
+    <h2>Edit Budget</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="BudgetID" />
+        <div class="form-group mb-3">
+            <label asp-for="UserID" class="form-label">User Email</label>
+            <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CategoryID" class="form-label">Category</label>
+            <select asp-for="CategoryID" class="form-control" asp-items="ViewBag.ExpenseCategoryID">
+                <option value="">-- Select Category --</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Amount" class="form-label">Budget Amount</label>
+            <input asp-for="Amount" type="number" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Month" class="form-label">Month (Optional for Yearly Budget)</label>
+            <select asp-for="Month" class="form-select">
+                <option value="0">-- Set for Whole Year --</option>
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Year" class="form-label">Year</label>
+            <input asp-for="Year" type="number" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-success">Update</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

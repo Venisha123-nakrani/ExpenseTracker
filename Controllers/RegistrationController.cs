@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Model;
-using System.Linq;
 using ExpenseTracker.Data;
+using System.Linq;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace ExpenseTracker.Controllers
 {
@@ -22,7 +24,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(User model, string cpassword)
+        public IActionResult Create(User model, string cpassword, IFormFile? ImageFile)
         {
             ModelState.Remove("PasswordHash");
             ModelState.Remove("Expenses");
@@ -47,9 +49,20 @@ namespace ExpenseTracker.Controllers
                 return View(model);
             }
 
+            // Handle Image Upload
+            if (ImageFile != null)
+            {
+                var fileName = Path.GetFileName(ImageFile.FileName);
+                var filePath = Path.Combine("wwwroot/uploads", fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    ImageFile.CopyTo(stream);
+                }
+                model.ImagePath = "/uploads/" + fileName;
+            }
+
             // Hash password using PasswordHasher
             model.PasswordHash = _passwordHasher.HashPassword(model, model.Password);
-
             model.Password = null; // Remove raw password before saving
 
             _db.Users.Add(model);

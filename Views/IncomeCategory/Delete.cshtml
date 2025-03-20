@@ -5,26 +5,28 @@
 <html>
 <head>
     <style>
-        .btn-secondary{
-            margin-top : 15px;
+        .btn-secondary {
+            margin-top: 25px;
         }
 
         .btn-danger {
-            margin-top: 15px;
+            margin-top: 25px;
         }
+
+       
     </style>
 </head>
 <body>
 
 
-<h3>@Model.CategoryName</h3>
+    <h3>@Model.CategoryName</h3>
 
-<form asp-action="Delete">
-    <input type="hidden" asp-for="IncomeCategoryID" />
-    <button type="submit" class="btn btn-danger">Delete</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+    <form asp-action="Delete" class="income">
+        <input type="hidden" asp-for="IncomeCategoryID" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
 
-<a asp-action="Index" class="btn btn-secondary" margin-top="30px">Back to List</a>
+    <a asp-action="Index" class="btn btn-secondary" margin-top="30px">Back to List</a>
 </body>
 </html>

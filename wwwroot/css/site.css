@@ -17,6 +17,22 @@ html {
   min-height: 100%;
 }
 
+
+:root {
+    --bg-color: #F4F4F4; /* Default Light Mode */
+    --card-bg: #FFFFFF;
+    --text-color: #333333;
+}
+
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
