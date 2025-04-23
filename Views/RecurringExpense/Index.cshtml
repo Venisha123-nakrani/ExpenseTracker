@@ -1,0 +1,48 @@
+﻿@model IEnumerable<ExpenseTracker.Model.RecurringExpense>
+
+@{
+    ViewData["Title"] = "Recurring Expenses";
+}
+
+<h2>🔁 Recurring Expenses</h2>
+
+<a asp-action="Create" class="btn btn-success mb-2">⨁ Add New Recurring Expense</a>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Trigger Day</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Is Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Category?.Name</td>
+                <td>₹@item.Amount</td>
+                <td>@item.Payment?.Name</td>
+                <td>@item.DateOfMonth</td>
+                <td>@item.StartDate.ToString("dd-MM-yyyy")</td>
+                <td>@item.EndDate?.ToString("dd-MM-yyyy")  </td>
+                <td>
+                    <form asp-action="ToggleStatus" asp-route-id="@item.RecurringID" method="post">
+                        <button type="submit" class="btn btn-sm @(item.IsActive ? "btn-success" : "btn-secondary")">
+                            @(item.IsActive ? "Active ✔" : "Inactive ✖")
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.RecurringID" class="btn btn-sm btn-primary">🖊️Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.RecurringID" class="btn btn-sm btn-danger">🗑️Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

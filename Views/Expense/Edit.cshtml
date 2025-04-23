@@ -5,37 +5,75 @@
 }
 @model Expense
 
-<h2>Edit Expense</h2>
+@{
+    ViewData["Title"] = "Edit Expense";
+}
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="ExpenseID" />
+<div class="finance-container expense-theme">
+    <div class="finance-header">
+        <h2 style="color:#0b8043; font-weight:1000"><i class="fas fa-edit me-2"></i>Edit Expense</h2>
+    </div>
 
-    <div class="form-group">
-        <label asp-for="ExpenseCategoryID" class="control-label"></label>
-        <select asp-for="ExpenseCategoryID" asp-items="ViewBag.CategoryID" class="form-control"></select>
+    <div class="finance-form">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="ExpenseID" />
+
+            <div class="form-group">
+                <label asp-for="ExpenseCategoryID" class="form-label" style="color:#0b8043; font-weight:500">Category</label>
+                <select asp-for="ExpenseCategoryID" asp-items="ViewBag.CategoryID" class="form-control">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="ExpenseCategoryID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PaymentModeID" class="form-label" style="color:#0b8043; font-weight:500">Payment Mode</label>
+                <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control">
+                    <option value="">-- Select Payment --</option>
+                </select>
+                <span asp-validation-for="PaymentModeID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="color:#0b8043; font-weight:500">User Email</label>
+                <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Amount" class="form-label" style="color:#0b8043; font-weight:500">Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input asp-for="Amount" class="form-control" />
+                </div>
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="form-label" style="color:#0b8043; font-weight:500">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ExpenseDate" class="form-label" style="color:#0b8043; font-weight:500">Expense Date</label>
+                <input asp-for="ExpenseDate" class="form-control" type="date" />
+                <span asp-validation-for="ExpenseDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-expense" style="color:white; font-weight:500; background-color:#0b8043; margin-top:30px">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+                <a asp-action="Index" class="btn btn-secondary" style="font-weight:500; background-color:lightgreen; border-color:lightgreen; margin-top:30px">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="form-group">
-        <label asp-for="PaymentModeID" class="control-label"></label>
-        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="UserID" class="form-label">User Email</label>
-        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
-    </div>
-    <div class="form-group">
-        <label asp-for="Amount" class="control-label"></label>
-        <input asp-for="Amount" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <input asp-for="Description" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="ExpenseDate" class="control-label"></label>
-        <input asp-for="ExpenseDate" class="form-control" type="date" />
-    </div>
-    <div class="form-group mt-2">
-        <input type="submit" value="Save" class="btn btn-success" />
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-    </div>
-</form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

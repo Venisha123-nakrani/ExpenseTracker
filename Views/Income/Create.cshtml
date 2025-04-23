@@ -1,51 +1,122 @@
 ﻿@model ExpenseTracker.Model.Income
 
-<p>
-    <a asp-controller="IncomeCategory" asp-action="Index" class="btn btn-primary1 mb-2">Add New Categories</a>
-    @* <a asp-controller="IncomeCategory" asp-action="Create" class="btn btn-success mb-2">Add New Income Category</a> *@
-</p>
+@{
+    ViewData["Title"] = "Create Income";
+}
 
-<h2>Create Income</h2>
-<html>
-<head>
-    <style>
+<div class="finance-container income-theme">
+    <div class="finance-header">
+        <h2 style="color:#1a73e8"><i class="fas fa-plus-circle me-2" style="color:#1a73e8"></i>Create Income</h2>
+        <div class="header-actions">
+            <a style="color:red" asp-controller="IncomeCategory" asp-action="Index" class="btn btn-income">
+                <i class="fas fa-tags me-2" style="color:red"></i>Manage Categories
+            </a>
+        </div>
+    </div>
 
-        .btn-primary1 {
-            color: #ffffff;
-            background-color: #d61919;
-            border-color: #d61919;
+    <div class="finance-form">
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label asp-for="IncomeCategoryID" class="form-label" style="color:#1a73e8">Category</label>
+                <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-control">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="IncomeCategoryID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PaymentModeID" class="form-label" style="color:#1a73e8">Payment Mode</label>
+                <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control">
+                    <option value="">-- Select Payment --</option>
+                </select>
+                <span asp-validation-for="PaymentModeID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="color:#1a73e8">User Email</label>
+                <input value="@ViewData["UserEmail"]" class="form-control" readonly />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Amount" class="form-label" style="color:#1a73e8">Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input asp-for="Amount" class="form-control" placeholder="0.00" />
+                </div>
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="form-label" style="color:#1a73e8">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IncomeDate" class="form-label" style="color:#1a73e8">Income Date</label>
+                <input asp-for="IncomeDate" class="form-control" type="date" />
+                <span asp-validation-for="IncomeDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Create
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<style>
+    .finance-form {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: blue;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border-radius: 6px;
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+
+        .form-control:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
         }
-    </style>
-</head>
-<body>
-    <form asp-action="Create" method="post">
-        <div class="form-group">
-            <label asp-for="IncomeCategoryID" class="control-label"></label>
-            <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-control"></select>
-        </div>
-        <div class="form-group">
-            <label asp-for="PaymentModeID" class="control-label"></label>
-            <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
-        </div>
-        <div class="form-group">
-            <label class="control-label">User Email</label>
-            <input value="@ViewData["UserEmail"]" class="form-control" readonly />
-        </div>
-        <div class="form-group">
-            <label asp-for="Amount" class="control-label"></label>
-            <input asp-for="Amount" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label asp-for="Description" class="control-label"></label>
-            <input asp-for="Description" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label asp-for="IncomeDate" class="control-label"></label>
-            <input asp-for="IncomeDate" class="form-control" type="date" />
-        </div>
-        <div class="form-group mt-2">
-            <input type="submit" value="Create" class="btn btn-primary" />
-        </div>
-    </form>
-</body>
-</html>
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 2rem;
+    }
+
+    .text-danger {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+    }
+</style>

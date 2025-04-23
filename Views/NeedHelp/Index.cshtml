@@ -1,0 +1,213 @@
+﻿@{
+    ViewData["Title"] = "Need Help?";
+}
+
+<div class="pagetitle">
+    <h1>Frequently Asked Questions</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Home")">Home</a></li>
+            <li class="breadcrumb-item active">Need Help?</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section faq">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Basic Questions</h5>
+
+                    <div class="accordion" id="faqGroup1">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    1. How do I add a new expense?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Go to the 'Expenses' section and click on 'Add Expense'. Fill in the details and save.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    2. How do I set my budget?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Navigate to 'Budget' and click 'Set Budget'. Enter your budget details and submit.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    3. How do I receive email alerts for overspending?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    When your expense exceeds your budget, the system will send an email alert automatically.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    4. How can I update my profile information?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Go to 'Profile' from the sidebar and click on 'Edit Profile'. You can update your details there.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                    5. How can I reset my password?
+                                </button>
+                            </h2>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Click on 'Forgot Password' from the login page and follow the instructions sent to your email.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                                    6. How can I track my total monthly expenses?
+                                </button>
+                            </h2>
+                            <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Your dashboard provides a visual summary of your income and expenses for the month.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7">
+                                    7. How do I delete my account?
+                                </button>
+                            </h2>
+                            <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Contact support via the 'Contact' page to request account deletion.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8">
+                                    8. How can I download my expense report?
+                                </button>
+                            </h2>
+                            <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqGroup1">
+                                <div class="accordion-body">
+                                    Go to the 'Reports' section, choose the desired month, and click 'Download Report'.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Section for More Questions -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Other Questions</h5>
+
+                    <div class="accordion" id="faqGroup2">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq9">
+                                    Can I export my data to Excel?
+                                </button>
+                            </h2>
+                            <div id="faq9" class="accordion-collapse collapse" data-bs-parent="#faqGroup2">
+                                <div class="accordion-body">
+                                    Yes, the 'Reports' section allows you to export your data in Excel format.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq10">
+                                    How do I categorize my expenses?
+                                </button>
+                            </h2>
+                            <div id="faq10" class="accordion-collapse collapse" data-bs-parent="#faqGroup2">
+                                <div class="accordion-body">
+                                    When adding an expense, you can select a category from the dropdown list or create a new one.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq11">
+                                    Can I recover deleted expenses?
+                                </button>
+                            </h2>
+                            <div id="faq11" class="accordion-collapse collapse" data-bs-parent="#faqGroup2">
+                                <div class="accordion-body">
+                                    Unfortunately, deleted expenses cannot be recovered. Please be careful when deleting records.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Advanced Questions</h5>
+
+                <div class="faq-item">
+                    <h6 style="color: blue;">1. How can I set a monthly budget for my expenses?</h6>
+                    <p style="color: grey;">
+                        To set a monthly budget, navigate to the <b>Budget</b> section, click on <b>Add Budget</b>,
+                        and fill in the required details such as category, amount, and effective date.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h6 style="color: blue;">2. What happens if I exceed my budget limit?</h6>
+                    <p style="color: grey;">
+                        If you exceed your budget, the system will notify you via email to help you manage
+                        your expenses better.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h6 style="color: blue;">3. Can I edit or delete my existing budget entries?</h6>
+                    <p style="color: grey;">
+                        Yes, you can edit or delete budget entries from the <b>Budget List</b> page.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</section>

@@ -1,50 +1,323 @@
 ﻿@model Expense
 
-<h2>Create Expense</h2>
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="ExpenseCategoryID" class="control-label"></label>
-        <select asp-for="ExpenseCategoryID" class="form-control" id="categoryDropdown">
-            <option value="">-- Select Category --</option>
-            @foreach (var category in ViewBag.CategoryID as List<SelectListItem>)
-            {
-                <option value="@category.Value">@category.Text</option>
-            }
-            <option value="Other">Other</option> <!-- "Other" is included only once -->
-        </select>
-    </div>
-    <div class="form-group">
-        <label asp-for="PaymentModeID" class="control-label"></label>
-        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control"></select>
-    </div>
-    <div class="form-group">
-        <label class="control-label">User Email</label>
-        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Amount" class="control-label"></label>
-        <input asp-for="Amount" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <input asp-for="Description" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="ExpenseDate" class="control-label"></label>
-        <input asp-for="ExpenseDate" class="form-control" type="date" />
-    </div>
-    <div class="form-group mt-2">
-        <input type="submit" value="Create" class="btn btn-primary" />
-        <input asp-action="Index" class="btn btn-danger btn-sm" value="Back to List" type="submit" />
-    </div>
-</form>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 
 <script>
-    document.getElementById('categoryDropdown').addEventListener('change', function () {
-        if (this.value === 'Other') {
-            window.location.href = '/ExpenseCategory/Create'; // Redirect to Create Category page
+    document.addEventListener("DOMContentLoaded", function () {
+        const receiptInput = document.getElementById("receiptImage");
+
+        receiptInput.addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            
+
+            Tesseract.recognize(
+                file,
+                'eng',
+                { logger: m => console.log(m) }
+            ).then(({ data: { text } }) => {
+                console.log("OCR Text:", text);
+                extractAndFillData(text);
+            }).catch(err => {
+                console.error("Tesseract error:", err);
+                alert("❌ Failed to extract text from image.");
+            });
+        });
+
+        function extractAndFillData(text) {
+            // Extract amount (flexible ₹ / Rs / plain number)
+            const amountMatch = text.match(/(?:Rs\.?|₹)?\s?(\d{1,5}(?:[.,]\d{1,2})?)/i);
+            if (amountMatch) {
+                document.getElementById("expenseAmount").value = amountMatch[1].replace(',', '');
+            }
+
+            // Extract description from first 2 non-empty lines
+            const lines = text.trim().split('\n').filter(line => line.trim() !== '');
+            if (lines.length > 0) {
+                document.getElementById("expenseDescription").value = lines.slice(0, 2).join(" - ");
+            }
+
+            // Extract date in dd/mm/yyyy or dd-mm-yyyy
+            const dateMatch = text.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4})\b/);
+            if (dateMatch) {
+                const parts = dateMatch[1].split(/[\/\-]/);
+                const formatted = `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-mm-dd
+                document.getElementById("expenseDate").value = formatted;
+            }
+
+            // Auto-select category (based on keywords in OCR text)
+            const categories = {
+                "food": "1",
+                "grocery": "2",
+                "travel": "3",
+                "bill": "4"
+            };
+            const categoryDropdown = document.getElementById("categoryDropdown");
+            for (const key in categories) {
+                if (text.toLowerCase().includes(key)) {
+                    categoryDropdown.value = categories[key];
+                    break;
+                }
+            }
+
+            // Auto-select payment mode (based on text)
+            const paymentKeywords = {
+                "cash": "1",
+                "card": "2",
+                "upi": "3"
+            };
+            const paymentDropdown = document.getElementById("paymentDropdown");
+            for (const keyword in paymentKeywords) {
+                if (text.toLowerCase().includes(keyword)) {
+                    paymentDropdown.value = paymentKeywords[keyword];
+                    break;
+                }
+            }
         }
     });
 </script>
+
+<h3>📸 Upload Receipt (Optional)</h3>
+<div class="form-group">
+    <label for="receiptImage">Upload Receipt</label>
+    <input type="file" accept="image/*" class="form-control" id="receiptImage" />
+    <small class="form-text text-muted">Only used to auto-fill amount and description — not stored.</small>
+</div>
+<hr />
+
+<div class="finance-container expense-theme">
+    <div class="finance-header">
+        <h2 style="color:#0b8043; font-weight:1000"><i class="fas fa-plus-circle me-2"></i>Create Expense</h2>
+    </div>
+
+    <div class="finance-form">
+        <form asp-action="Create" method="post">
+
+            <div class="form-group">
+                <label class="form-label" style="color:#0b8043; font-weight:500">User Email</label>
+                <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
+            </div>
+
+
+            <div class="form-group">
+                <label asp-for="ExpenseCategoryID" class="form-label" style="color:#0b8043; font-weight:500">Category</label>
+                <select asp-for="ExpenseCategoryID" class="form-control" id="categoryDropdown" required>
+                    <option value="">-- Select Category --</option>
+                    @if (ViewBag.CategoryID != null && ViewBag.CategoryID is List<SelectListItem>)
+                    {
+                        @foreach (var category in ViewBag.CategoryID as List<SelectListItem>)
+                        {
+                            <option value="@category.Value">@category.Text</option>
+                        }
+                    }
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="ExpenseCategoryID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PaymentModeID" class="form-label" style="color:#0b8043; font-weight:500"> Payment Mode</label>
+                <select id="paymentDropdown" asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control" required>
+                    <option value="">-- Select Payment --</option>
+                </select>
+                <span asp-validation-for="PaymentModeID" class="text-danger"></span>
+            </div>
+   
+            <div class="form-group">
+                <label asp-for="ExpenseDate" class="form-label" style="color:#0b8043; font-weight:500"></label>
+                <input asp-for="ExpenseDate" id="expenseDate" class="form-control" type="date" required />
+                <span asp-validation-for="ExpenseDate" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                <label asp-for="Amount" class="form-label" style="color:#0b8043; font-weight:500"></label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input asp-for="Amount" id="expenseAmount" class="form-control" type="number" min="1" required />
+                </div>
+                <small id="budgetMessage" class="text-danger"></small>
+                <span asp-validation-for="Amount" class="text-danger"></span>
+                <!-- Hidden field to store income -->
+                <input type="hidden" id="totalIncome" value="@ViewBag.TotalIncome" />
+                <input type="hidden" id="availableSavings" value="@ViewBag.AvailableSavings" readonly />
+
+                <!-- Savings Dropdown (initially hidden with d-none class) -->
+                <div>
+                    @if ((decimal)ViewBag.TotalIncome > 0 || (decimal)ViewBag.AvailableSavings > 0)
+                    {
+                        <div class="form-group">
+                            <label for="useSavings">Use Savings?</label>
+                            <select name="useSavings" id="useSavings" class="form-control">
+                                <option value="no">No</option>
+                                <option value="yes">Yes - Use ₹@ViewBag.AvailableSavings</option>
+                            </select>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="form-label" style="color:#0b8043; font-weight:500">Description</label>
+                <textarea id="expenseDescription" asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-expense" style="background-color:#0b8043; color:white; font-weight:500">
+                    <i class="fas fa-save me-2"></i>Create
+                </button>
+                <a asp-action="Index" class="btn btn-secondary" style="font-weight:500">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("categoryDropdown").addEventListener("change", function () {
+            handleBudgetFetch(false);
+        });
+
+        document.getElementById("expenseDate").addEventListener("change", function () {
+            handleBudgetFetch(false);
+        });
+
+        document.getElementById("expenseAmount").addEventListener("input", function () {
+            validateExpense();
+        });
+
+        // document.getElementById("submitButton").addEventListener("click", function (event) {
+        //     event.preventDefault(); // Prevent form submission until validation is done
+        //     handleBudgetFetch(true);
+        // });
+    });
+
+    let currentBudget = 0;
+    let totalSpent = 0;
+
+    function handleBudgetFetch(validate = false) {
+        let categoryId = document.getElementById("categoryDropdown").value;
+        let expenseDate = document.getElementById("expenseDate").value;
+
+        if (!categoryId || !expenseDate) {
+            return;
+        }
+
+        let dateObj = new Date(expenseDate);
+        let year = dateObj.getFullYear();
+        let month = dateObj.getMonth() + 1;
+
+            fetch(`/Expense/GetCategoryBudget?categoryId=${categoryId}&year=${year}&month=${month}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch budget data.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    currentBudget = data.budget;
+                    totalSpent = data.spent;
+                    if (validate) {
+                        validateExpense(true);
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching budget:", error);
+                alert("An error occurred while fetching budget data.");
+            });
+    }
+
+        function validateExpense() {
+        let amountInput = document.getElementById("expenseAmount");
+        let submitButton = document.getElementById("submitButton");
+        let budgetMessage = document.getElementById("budgetMessage");
+
+        let amount = parseFloat(amountInput.value) || 0;
+        let totalAfterThisExpense = totalSpent + amount; // Consider already spent amount
+        let remainingBudget = currentBudget - totalSpent;
+        let seventyPercentBudget = 0.7 * currentBudget;
+
+        // Reset messages and button state
+        budgetMessage.textContent = "";
+        submitButton.disabled = false;
+
+        if (currentBudget > 0) {
+            if (amount > remainingBudget) {
+                budgetMessage.textContent = ❌ Error: You cannot exceed the total budget of ₹${currentBudget}. Remaining: ₹${remainingBudget}.;
+                submitButton.disabled = true; // Disable submit button
+                return false;
+            }
+            else if (totalAfterThisExpense > seventyPercentBudget) {
+                // Check if total spent + new amount exceeds 70%
+                budgetMessage.textContent = "⚠️ Warning: Your total expenses for this category have exceeded 70% of your budget!";
+            } else {
+                budgetMessage.textContent = ""; // Clear message if within a safe range
+            }
+        }
+
+        return true;
+            document.getElementById('categoryDropdown').addEventListener('change', function () {
+                if (this.value === 'Other') {
+                    window.location.href = '/ExpenseCategory/Create';
+                }
+            });
+    }
+
+    // Revalidate on every input to ensure warnings persist
+    document.getElementById("expenseAmount").addEventListener("input", validateExpense);
+
+    // Ensure form submission is blocked if validation fails
+    document.querySelector("form").addEventListener("submit", function (event) {
+        if (!validateExpense()) {
+            event.preventDefault(); // Stop submission if validation fails
+        }
+    });
+
+    // Ensure form submission is properly handled
+    document.querySelector("form").addEventListener("submit", function (event) {
+        if (!validateExpense()) {
+            event.preventDefault(); // Stop submission if validation fails
+        }
+    });
+
+
+
+    document.getElementById('categoryDropdown').addEventListener('change', function () {
+        if (this.value === 'Other') {
+            window.location.href = '/ExpenseCategory/Create';
+        }
+    });
+</script>
+
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["WarningMessage"]
+    </div>
+}
+

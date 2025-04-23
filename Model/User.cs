@@ -22,12 +22,31 @@ namespace ExpenseTracker.Model
         [NotMapped]  // This field is used only for form binding, not stored in DB
         public string Password { get; set; } = null!;
 
-
         [Column(TypeName = "text")]
         public string PasswordHash { get; set; } = null!;
 
         [Column(TypeName = "datetime")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [Column(TypeName = "datetime")]
+        public DateTime? BirthDate { get; set; }
+
+        [StringLength(500)]
+        public string? Address { get; set; }
+
+        [StringLength(15)]
+        public string? PhoneNumber { get; set; }
+
+        [StringLength(100)]
+        public string? Country { get; set; }
+
+        [StringLength(255)]
+        public string? ImagePath { get; set; }
+        // ✅ NEW: For password reset functionality
+        [StringLength(100)]
+        public string? PasswordResetToken { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? TokenExpiryTime { get; set; }
 
         [InverseProperty("User")]
         public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
@@ -37,11 +56,16 @@ namespace ExpenseTracker.Model
 
         [InverseProperty("User")]
         public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+
         [InverseProperty("User")]
         public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
 
         [InverseProperty("User")]
         public virtual ICollection<RecurringExpense> RecurringExpenses { get; set; } = new List<RecurringExpense>();
-    }
+        [InverseProperty("User")]
+        public virtual ICollection<UserActivity> UserActivities { get; set; } = new List<UserActivity>();
+        [InverseProperty("User")]
+        public virtual ICollection<Saving> Savings { get; set; } = new List<Saving>();
 
+    }
 }

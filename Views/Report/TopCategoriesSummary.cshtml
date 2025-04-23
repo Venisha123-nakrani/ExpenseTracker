@@ -1,0 +1,124 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model ExpenseTracker.Model.TopCategoryViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Top Categories Summary";
+
+    string fromDate = ViewBag.FromDate ?? DateTime.Now.ToString("yyyy-MM-01"); // 1st of this month
+    string toDate = ViewBag.ToDate ?? DateTime.Now.ToString("yyyy-MM-dd");     // today
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Top Categories Summary</h2>
+    <a asp-controller="Report" asp-action="CategoryReport" class="btn btn-outline-secondary">← Back to Category Report</a>
+</div>
+
+<form method="get" asp-action="TopCategoriesSummary" asp-controller="Report" class="mb-4">
+    <div class="form-row align-items-end">
+        <div class="col-auto">
+            <label>From</label>
+            <input type="date" name="fromDate" class="form-control" value="@fromDate" />
+        </div>
+        <div class="col-auto">
+            <label>To</label>
+            <input type="date" name="toDate" class="form-control" value="@toDate" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary mt-4">Filter</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.CategoryNames.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.CategoryNames.Count; i++)
+            {
+                <tr>
+                    <td>@Model.CategoryNames[i]</td>
+                    <td>@Model.CategoryTotals[i].ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <canvas id="pieChart" width="400" height="400"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="barChart" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <form method="post" asp-action="ExportTopCategoriesSummaryPdf" asp-controller="Report">
+        <input type="hidden" name="FromDate" value="@fromDate" />
+        <input type="hidden" name="ToDate" value="@toDate" />
+        <input type="hidden" id="BarChartImage" name="BarChartImage" />
+        <input type="hidden" id="PieChartImage" name="PieChartImage" />
+        <button type="submit" class="btn btn-danger mt-4" onclick="prepareChartData()">Export to PDF</button>
+    </form>
+}
+else
+{
+    <p class="text-muted">No expenses found in the selected date range.</p>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(Json.Serialize(Model.CategoryNames));
+        const data = @Html.Raw(Json.Serialize(Model.CategoryTotals));
+
+        const pieChart = new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: labels.map(() =>
+                        `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, 0.6)`
+                    )
+                }]
+            }
+        });
+
+        const barChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total',
+                     data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        function prepareChartData() {
+            const barChartImage = barChart.toBase64Image();
+            const pieChartImage = pieChart.toBase64Image();
+            document.getElementById('BarChartImage').value = barChartImage;
+            document.getElementById('PieChartImage').value = pieChartImage;
+        }
+    </script>
+}

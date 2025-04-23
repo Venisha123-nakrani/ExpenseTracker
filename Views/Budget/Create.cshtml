@@ -1,0 +1,107 @@
+﻿@model ExpenseTracker.Model.Budget
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Create Budget";
+    int currentYear = DateTime.Now.Year;
+    int nextYear = currentYear + 1;
+    int currentMonth = DateTime.Now.Month;
+}
+
+<div class="finance-container bg-light p-4 rounded-3">
+    <div class="finance-header d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color:crimson; font-weight:bold"><i class="fas fa-plus-circle me-2"></i>Create Budget</h2>
+    </div>
+
+    <form asp-action="Create" method="post" class="needs-validation" novalidate>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold" style="color:black">User</label>
+                        <input value="@ViewData["UserEmail"]" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Year" class="form-label fw-bold" style="color:black">Year</label>
+                        <select asp-for="Year" class="form-select" id="budgetYear" required>
+                            <option value="@currentYear">@currentYear</option>
+                            <option value="@nextYear">@nextYear</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Month" class="form-label fw-bold" style="color:black">Month (Optional)</label>
+                        <select asp-for="Month" class="form-select" id="budgetMonth">
+                            <option value="0">-- Set for Whole Year --</option>
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                if (i < currentMonth) { continue; }
+                                <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold" style="color:black">Total Income (₹)</label>
+                        <input id="UserIncome" value="@ViewData["UserIncome"]" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="CategoryID" class="form-label fw-bold" style="color:black">Category</label>
+                        <select asp-for="CategoryID" class="form-select" required>
+                            <option value="">-- Select Category --</option>
+                            @foreach (var category in ViewBag.ExpenseCategoryID as List<SelectListItem>)
+                            {
+                                <option value="@category.Value">@category.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Amount" class="form-label fw-bold" style="color:black">Budget Amount (₹)</label>
+                        <input asp-for="Amount" type="number" class="form-control" required min="1" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success" style="background-color:crimson; border-color:crimson">
+                <i class="fas fa-save me-2"></i>Save
+            </button>
+            <a asp-action="Index" class="btn btn-secondary" style="background-color:#ffc107; border-color:#ffc107">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById("budgetYear").addEventListener("change", updateIncome);
+    document.getElementById("budgetMonth").addEventListener("change", updateIncome);
+
+    function updateIncome() {
+        let selectedYear = document.getElementById("budgetYear").value;
+        let selectedMonth = document.getElementById("budgetMonth").value;
+
+        if (selectedMonth == 0) return; // Skip fetching for yearly budget
+
+        fetch(`/Budget/GetIncomeForMonthYear?year=${selectedYear}&month=${selectedMonth}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("UserIncome").value = data.income;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error("Error fetching income:", error));
+    }
+</script>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }

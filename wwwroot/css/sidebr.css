@@ -1,0 +1,19 @@
+﻿<style >
+/* Ensure the header does not overlap the content */
+body {
+    padding-top: 60px; /* Adjust according to header height */
+}
+
+
+
+/* Responsive: Collapse sidebar on smaller screens */
+@media (max-width: 992px) {
+    #sidebar {
+        left: -250px; /* Hide sidebar by default */
+    }
+
+    main {
+        margin-left: 0;
+    }
+}
+

@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using ExpenseTracker.Data;
+using ExpenseTracker.Utilities;
+using System.Globalization;
+using System.Text;
+using ClosedXML.Excel;
 
 namespace ExpenseTracker.Controllers
 {
@@ -14,9 +18,11 @@ namespace ExpenseTracker.Controllers
     {
         private readonly ApplicationDbContext _context;
         private const int PageSize = 5;
+        private readonly ActivityLogger _activityLogger;
         public IncomeController(ApplicationDbContext context)
         {
             _context = context;
+            _activityLogger = new ActivityLogger(context);
         }
         public async Task<IActionResult> Index(string sortOrder, int? categoryId, string searchString, int pageNumber = 1)
         {
@@ -89,6 +95,9 @@ namespace ExpenseTracker.Controllers
             ViewData["TotalPages"] = (int)Math.Ceiling(totalItems / (double)pageSize);
             ViewData["CurrentPage"] = pageNumber;
 
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(user.UserID, "Viewed income records");
+
             return View(incomeList);
         }
         public IActionResult Create()
@@ -133,6 +142,9 @@ namespace ExpenseTracker.Controllers
             // Re-populate the dropdown lists in case of validation errors
             ViewData["IncomeCategoryID"] = new SelectList(_context.IncomeCategories, "IncomeCategoryID", "CategoryName", income.IncomeCategoryID);
             ViewData["PaymentModeID"] = new SelectList(_context.Payments, "PaymentModeID", "Name", income.PaymentModeID);
+
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(income.UserID, "Created a new income record");
 
             return View(income);
         }
@@ -195,6 +207,9 @@ namespace ExpenseTracker.Controllers
             ViewData["IncomeCategoryID"] = new SelectList(_context.IncomeCategories, "IncomeCategoryID", "CategoryName", income.IncomeCategoryID);
             ViewData["PaymentModeID"] = new SelectList(_context.Payments, "PaymentModeID", "Name", income.PaymentModeID);
 
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(income.UserID, "Updated an income record");
+
             return View(income);
         }
 
@@ -221,6 +236,10 @@ namespace ExpenseTracker.Controllers
             var income = await _context.Incomes.FindAsync(id);
             _context.Incomes.Remove(income);
             await _context.SaveChangesAsync();
+
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(income.UserID, "Deleted an income record");
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -244,8 +263,121 @@ namespace ExpenseTracker.Controllers
                 return NotFound();
             }
 
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(income.UserID, "Viewed income details");
+
             return View(income);
         }
+
+        public IActionResult ExportIncomeToCsv()
+        {
+            //Retrive the logged-in user's email from session
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest("User not logged in");
+            }
+
+            //Fetch the user by email
+            var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            // Get incomes for the logged-in user
+            var incomes = _context.Incomes
+                .Include(i => i.IncomeCategory)
+                .Include(i => i.Payment)
+                .Where(i => i.UserID == user.UserID)
+                .ToList();
+
+            //If no income data exists, return an error message
+            if (incomes.Count == 0)
+            {
+                TempData["ExportMessage"] = "No income data found. Please add data before exporting.";
+            }
+
+            var csv = new StringBuilder();
+            foreach (var income in incomes)
+            {
+                csv.AppendLine($"{income.IncomeID},{income.UserID},\"{income.IncomeCategory?.CategoryName}\",\"{income.Payment?.PaymentModeID}\",{income.Amount.ToString("F2", CultureInfo.InvariantCulture)},\"{income.Description}\",{income.IncomeDate:yyyy-MM-dd},{income.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+            return File(bytes, "text/csv", "Income.csv");
+        }
+
+        public IActionResult ExportIncomeToExcel()
+        {
+            //Retrieve the logged-in email from session
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest("User not logged in");
+            }
+
+            //Fetch the user by email
+            var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            //Get incomes for the logged-in user
+            var incomes = _context.Incomes
+                .Include(i => i.IncomeCategory)
+                .Include(i => i.Payment)
+                .Where(i => i.UserID == user.UserID)
+                .ToList();
+
+
+            //If no income data exists, return an error message
+
+            if (incomes.Count == 0)
+            {
+                TempData["ExportMessage"] = "No income data found. Please add data before exporting.";
+            }
+
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Income");
+                var currentRow = 1;
+
+                // Adding Header
+                worksheet.Cell(currentRow, 1).Value = "IncomeID";
+                worksheet.Cell(currentRow, 2).Value = "UserID";
+                worksheet.Cell(currentRow, 3).Value = "Category";
+                worksheet.Cell(currentRow, 4).Value = "Payment Mode";
+                worksheet.Cell(currentRow, 5).Value = "Amount";
+                worksheet.Cell(currentRow, 6).Value = "Description";
+                worksheet.Cell(currentRow, 7).Value = "Created At";
+
+                //Adding Data
+                foreach (var income in incomes)
+                {
+                    currentRow++;
+                    worksheet.Cell(currentRow, 1).Value = income.IncomeID;
+                    worksheet.Cell(currentRow, 2).Value = income.UserID;
+                    worksheet.Cell(currentRow, 3).Value = income.IncomeCategory?.CategoryName;
+                    worksheet.Cell(currentRow, 4).Value = income.Payment?.PaymentModeID;
+                    worksheet.Cell(currentRow, 5).Value = income.Amount;
+                    worksheet.Cell(currentRow, 6).Value = income.Description;
+                    worksheet.Cell(currentRow, 7).Value = income.IncomeDate.ToString("yyyy-MM-dd");
+                    worksheet.Cell(currentRow, 8).Value = income.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+                //Save to MemoryStream
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Income.xlsx");
+                }
+            }
+        }
+
 
     }
 }

@@ -1,39 +1,74 @@
 ﻿@model ExpenseTracker.Model.Income
 
-<h2>Edit Income</h2>
+@{
+    ViewData["Title"] = "Edit Income";
+}
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="IncomeID" />
+<div class="finance-container income-theme">
+    <div class="finance-header">
+        <h2 style="color:#1a73e8"><i class="fas fa-edit me-2" style="color:#1a73e8"></i>Edit Income</h2>
+    </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="IncomeCategoryID" class="form-label"></label>
-        <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-select"></select>
+    <div class="finance-form">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="IncomeID" />
+
+            <div class="form-group">
+                <label asp-for="IncomeCategoryID" class="form-label" style="color:#1a73e8">Category</label>
+                <select asp-for="IncomeCategoryID" asp-items="ViewBag.IncomeCategoryID" class="form-control">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="IncomeCategoryID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PaymentModeID" class="form-label" style="color:#1a73e8">Payment Mode</label>
+                <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-control">
+                    <option value="">-- Select Payment --</option>
+                </select>
+                <span asp-validation-for="PaymentModeID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="color:#1a73e8">User Email</label>
+                <input value="@ViewData["UserEmail"]" class="form-control" readonly />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Amount" class="form-label" style="color:#1a73e8">Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input asp-for="Amount" class="form-control" placeholder="0.00" />
+                </div>
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="form-label" style="color:#1a73e8">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-info"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IncomeDate" class="form-label" style="color:#1a73e8">Income Date</label>
+                <input asp-for="IncomeDate" class="form-control" type="date" />
+                <span asp-validation-for="IncomeDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-income btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="form-group mb-3">
-        <label asp-for="PaymentModeID" class="form-label"></label>
-        <select asp-for="PaymentModeID" asp-items="ViewBag.PaymentModeID" class="form-select"></select>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="UserID" class="form-label">User Email</label>
-        <input type="email" class="form-control" value="@ViewData["UserEmail"]" readonly />
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Amount" class="form-label"></label>
-        <input asp-for="Amount" class="form-control" />
-        <span asp-validation-for="Amount" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Description" class="form-label"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="IncomeDate" class="form-label"></label>
-        <input asp-for="IncomeDate" class="form-control" type="date" />
-        <span asp-validation-for="IncomeDate" class="text-danger"></span>
-    </div>
-    <div class="form-group mt-3">
-        <input type="submit" value="Save Changes" class="btn btn-warning" />
-        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-    </div>
-</form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

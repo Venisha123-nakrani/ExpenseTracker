@@ -28,14 +28,28 @@ namespace ExpenseTracker.Model
 
         [Column(TypeName = "datetime")]
         public DateTime? CreatedAt { get; set; }
+        [Column("PaymentModeID")]
+        public int PaymentModeID { get; set; } // ✅ New: For auto-fill to know where to deduct from
+
+        
+        [Column("DateOfMonth")]
+        public int DateOfMonth { get; set; } // ✅ NEW: Trigger date like 3rd of every month
+
+        public bool IsActive { get; set; } = true; // ✅ To toggle the recurring entry
+
+
 
         [ForeignKey("CategoryID")]
         [InverseProperty("RecurringExpenses")]
-        public virtual ExpenseCategory Category { get; set; } = null!;
+        public virtual ExpenseCategory? Category { get; set; } = null!;
 
         [ForeignKey("UserID")]
         [InverseProperty("RecurringExpenses")]
-        public virtual User User { get; set; } = null!;
+        public virtual User? User { get; set; } = null!;
+
+        [ForeignKey("PaymentModeID")]
+        [InverseProperty("RecurringExpenses")]
+        public virtual Payment? Payment { get; set; } = null!;
     }
 
 }
