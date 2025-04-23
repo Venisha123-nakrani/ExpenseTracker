@@ -1,0 +1,68 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@{
+    var isIncome = Context.Request.Path.Value.Contains("Income", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="finance-toggle mb-4">
+    <div class="toggle-container">
+        <a asp-action="Index" asp-controller="Income" class="toggle-option income @(isIncome ? "active" : "")">
+            <i class="fas fa-money-bill-wave me-2"></i> Income
+        </a>
+        <a asp-action="Index" asp-controller="Expense" class="toggle-option expense @(isIncome ? "" : "active")">
+            <i class="fas fa-shopping-cart me-2"></i> Expense
+        </a>
+    </div>
+</div>
+
+<style>
+    .finance-toggle {
+        display: flex;
+        justify-content: center;
+    }
+
+    .toggle-container {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .toggle-option {
+        padding: 10px 25px;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+        .toggle-option.income {
+            color: #1a73e8;
+        }
+
+        .toggle-option.expense {
+            color: #0b8043;
+        }
+
+        .toggle-option.income.active {
+            background: #1a73e8;
+            color: white;
+            box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3);
+        }
+
+        .toggle-option.expense.active {
+            background: #0b8043;
+            color: white;
+            box-shadow: 0 2px 5px rgba(11, 128, 67, 0.3);
+        }
+
+        .toggle-option:not(.active):hover {
+            background: rgba(0,0,0,0.05);
+        }
+</style>

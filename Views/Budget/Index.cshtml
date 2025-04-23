@@ -1,0 +1,222 @@
+﻿@model IEnumerable<ExpenseTracker.Model.Budget>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Budget Management";
+    int currentYear = DateTime.Now.Year;
+    var bgClass = "bg-light";
+    var tableClass = "table-light";
+}
+
+<div class="finance-container @bgClass p-4 rounded-3">
+    <div class="finance-header d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-wallet me-2"></i>Budget Management</h2>
+        <div>
+            <a asp-action="Create" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Add New Budget
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-filter me-2"></i>Filter Budgets</h5>
+            <form method="get" asp-action="Index" id="filterForm" class="row g-3">
+                <div class="col-md-4">
+                    <label for="categoryId" class="form-label">Category</label>
+                    <select name="categoryId" id="categoryId" class="form-select" onchange="submitForm()">
+                        <option value="">All Categories</option>
+                        @foreach (var category in (SelectList)ViewData["Categories"])
+                        {
+                            <option value="@category.Value" selected="@(Context.Request.Query["categoryId"] == category.Value ? "selected" : null)">
+                                @category.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="month" class="form-label">Month</label>
+                    <select name="month" id="month" class="form-select" onchange="submitForm()">
+                        <option value="">All Months</option>
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" selected="@(Context.Request.Query["month"] == i.ToString() ? "selected" : null)">
+                                @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="year" class="form-label">Year</label>
+                    <select name="year" id="year" class="form-select" onchange="submitForm()">
+                        <option value="">All Years</option>
+                        @for (int i = currentYear - 2; i <= currentYear + 2; i++)
+                        {
+                            <option value="@i" selected="@(Context.Request.Query["year"] == i.ToString() ? "selected" : null)">
+                                @i
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Summary Cards -->
+    <!-- Budgets Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover @tableClass">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><i class="fas fa-tag me-1"></i> Category</th>
+                            <th><i class="fas fa-money-bill-wave me-1"></i> Amount</th>
+                            <th><i class="fas fa-calendar-alt me-1"></i> Month</th>
+                            <th><i class="fas fa-calendar me-1"></i> Year</th>
+                            <th><i class="fas fa-cog me-1"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Category.Name</td>
+                                <td class="fw-bold">₹@item.Amount.ToString("N2")</td>
+                                <td>@(item.Month != 0 ? System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(item.Month) : "Yearly")</td>
+                                <td>@item.Year</td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.BudgetID" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.BudgetID" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewData["TotalPages"] != null)
+            {
+                int totalPages = (int)ViewData["TotalPages"];
+                int currentPage = (int)ViewData["CurrentPage"];
+
+                <nav aria-label="Budget Pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { categoryId = ViewData["categoryId"], month = ViewData["month"], year = ViewData["year"], pageNumber = 1 })">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { categoryId = ViewData["categoryId"], month = ViewData["month"], year = ViewData["year"], pageNumber = currentPage - 1 })">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { categoryId = ViewData["categoryId"], month = ViewData["month"], year = ViewData["year"], pageNumber = i })">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { categoryId = ViewData["categoryId"], month = ViewData["month"], year = ViewData["year"], pageNumber = currentPage + 1 })">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { categoryId = ViewData["categoryId"], month = ViewData["month"], year = ViewData["year"], pageNumber = totalPages })">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Error Messages -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mt-3">
+        <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<script>
+    function submitForm() {
+        document.getElementById("filterForm").submit();
+    }
+</script>
+
+<style>
+    .finance-container {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        border-radius: 10px;
+        border: none;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    /* Updated pagination styles */
+    .pagination .page-link {
+        color: #000000; /* Black color for all pagination items */
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0b8043;
+        border-color: #0b8043;
+        color: white; /* White text for active page */
+    }
+
+    .pagination .page-item.disabled .page-link {
+        color: #0b8043; /* Gray color for disabled items */
+    }
+
+    /* Ensure arrow icons maintain proper spacing */
+    .pagination .page-link i {
+        vertical-align: middle;
+    }
+</style>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}

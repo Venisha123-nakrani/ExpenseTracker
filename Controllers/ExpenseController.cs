@@ -1,19 +1,32 @@
 ﻿using ExpenseTracker.Data;
 using ExpenseTracker.Model;
+using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
+using System.Net;
 using System.Security.Claims;
+using ExpenseTracker.Utilities;
+using ClosedXML.Excel;
+using System.Globalization;
+using System.Text;
 
 namespace ExpenseTracker.Controllers
 {
     public class ExpenseController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public ExpenseController(ApplicationDbContext context)
+        private readonly EmailService _emailService;
+        private readonly ILogger<ExpenseController> _logger; // Logger for debugging
+        private readonly ActivityLogger _activityLogger;
+        public ExpenseController(ApplicationDbContext context, EmailService emailService, ILogger<ExpenseController> logger)
         {
             _context = context;
+            _emailService = emailService;
+            _logger = logger;
+            _activityLogger = new ActivityLogger(context);
         }
 
         public async Task<IActionResult> Index(string sortOrder, int? categoryId, string searchString, int pageNumber = 1)
@@ -94,6 +107,9 @@ namespace ExpenseTracker.Controllers
             ViewData["TotalPages"] = (int)Math.Ceiling(totalItems / (double)pageSize);
             ViewData["CurrentPage"] = pageNumber;
 
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(user.UserID, "Viewed expenses");
+
             return View(expenseList);
         }
         [HttpGet]
@@ -107,60 +123,200 @@ namespace ExpenseTracker.Controllers
 
             if (expense == null) return NotFound();
 
+
+
             return View(await expense.ToListAsync());
         }
         public IActionResult Create()
         {
-            // Fetch logged-in user email from session
             var userEmail = HttpContext.Session.GetString("UserEmail");
+            ViewData["UserEmail"] = userEmail ?? "";
 
-            ViewData["UserEmail"] = userEmail; // Store in ViewData to display in the view
-
-            ViewBag.CategoryID = _context.ExpenseCategories
-                .Select(c => new SelectListItem
+            var categories = _context.ExpenseCategories?.ToList();
+            if (categories == null || !categories.Any())
+            {
+                ViewBag.CategoryID = new List<SelectListItem>();
+            }
+            else
+            {
+                ViewBag.CategoryID = categories.Select(c => new SelectListItem
                 {
                     Value = c.ExpenseCategoryID.ToString(),
                     Text = c.Name
-                })
-                .ToList()
-                .DistinctBy(c => c.Text)
-                .ToList();
+                }).ToList();
+            }
 
-            ViewBag.PaymentModeID = _context.Payments
+
+            ViewBag.PaymentModeID = _context.Payments?
                 .Select(p => new SelectListItem
                 {
                     Value = p.PaymentModeID.ToString(),
                     Text = p.Name
                 })
-                .ToList();
+                .ToList() ?? new List<SelectListItem>();
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            var userId = user?.UserID ?? 0;
+
+            int currentMonth = DateTime.Now.Month;
+            int currentYear = DateTime.Now.Year;
+
+            var totalIncome = _context.Incomes
+                .Where(i => i.UserID == userId && i.IncomeDate.Month == currentMonth && i.IncomeDate.Year == currentYear)
+                .Sum(i => (decimal?)i.Amount) ?? 0;
+
+            var availableSavings = _context.Savings
+                .Where(s => s.UserID == userId && !s.IsUsed)
+                .Sum(s => s.Amount);
+
+            ViewBag.TotalIncome = totalIncome;
+            ViewBag.AvailableSavings = availableSavings;
 
             return View();
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ExpenseID,UserID,ExpenseCategoryID,PaymentModeID,Amount,Description,ExpenseDate")] Expense expense)
+        public async Task<IActionResult> Create([Bind("ExpenseID,UserID,ExpenseCategoryID,PaymentModeID,Amount,Description,ExpenseDate")] Expense expense, string useSavings)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                expense.UserID = (int)(_context.Users.FirstOrDefault(u => u.Email == HttpContext.Session.GetString("UserEmail"))?.UserID);
-
-                expense.CreatedAt = DateTime.Now;
-                _context.Add(expense);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                LoadViewData(expense);
+                return View(expense);
             }
 
-            // Re-populate the ViewData for dropdowns to retain selections in case of validation errors
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            expense.UserID = _context.Users.FirstOrDefault(u => u.Email == userEmail)?.UserID ?? 0;
+
+            int expenseMonth = expense.ExpenseDate.Month;
+            int expenseYear = expense.ExpenseDate.Year;
+
+            var totalBudget = _context.Budgets
+                .Where(b => b.CategoryID == expense.ExpenseCategoryID && b.Year == expenseYear && (b.Month == 0 || b.Month == expenseMonth))
+                .Sum(b => (decimal?)b.Amount) ?? 0;
+
+            var totalSpent = _context.Expenses
+                .Where(e => e.ExpenseCategoryID == expense.ExpenseCategoryID && e.ExpenseDate.Year == expenseYear && e.ExpenseDate.Month == expenseMonth)
+                .Sum(e => (decimal?)e.Amount) ?? 0;
+
+            decimal remainingBudget = totalBudget - totalSpent;
+
+            if (totalBudget > 0)
+            {
+                if (expense.Amount > remainingBudget)
+                {
+                    TempData["ErrorMessage"] = $"Error: You cannot exceed the total budget of {totalBudget:C} for this category. Remaining budget: {remainingBudget:C}";
+                    LoadViewData(expense);
+                    return View(expense);
+                }
+                if (expense.Amount > (0.7m * totalBudget) && remainingBudget > expense.Amount)
+                {
+                    TempData["WarningMessage"] = $"Warning: This expense exceeds 70% of your budget for this category!";
+                }
+            }
+
+            if (useSavings == "yes")
+            {
+                // Deduct from savings (you can write logic to deduct from oldest savings first)
+                var savingsToUse = _context.Savings
+                    .Where(s => s.UserID == expense.UserID && !s.IsUsed)
+                    .OrderBy(s => s.Year).ThenBy(s => s.Month)
+                    .ToList();
+
+                decimal remaining = expense.Amount;
+
+                foreach (var s in savingsToUse)
+                {
+                    if (remaining <= 0) break;
+
+                    if (s.Amount <= remaining)
+                    {
+                        remaining -= s.Amount;
+                        s.IsUsed = true;
+                        s.Amount = 0;
+                    }
+                    else
+                    {
+                        s.Amount -= remaining;
+                        remaining = 0;
+                    }
+
+                    _context.Update(s);
+                }
+            }
+
+            expense.CreatedAt = DateTime.Now;
+            _context.Add(expense);
+            await _context.SaveChangesAsync();
+
+            decimal newRemainingBudget = remainingBudget - expense.Amount;
+            if (newRemainingBudget <= 0)
+            {
+                try
+                {
+                    string emailSubject = "⚠️ Budget Alert: You Have Exhausted Your Budget";
+                    string emailBody = $@"
+                    <h3>Dear User,</h3>
+                    <p>You have used up your total budget of <b>{totalBudget:C}</b> for this category.</p>
+                    <p>Any further expenses in this category will exceed your set budget.</p>
+                    <p>Please review your budget and plan accordingly.</p>
+                    <br/>
+                    <p>Thank you,</p>
+                    <p><b>Expense Management System</b></p>";
+
+                    _logger.LogInformation("Sending budget exhausted email to {Email}", userEmail);
+                    await _emailService.SendEmailAsync(userEmail, emailSubject, emailBody);
+                    _logger.LogInformation("Email sent successfully.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Email sending failed: {ErrorMessage}", ex.Message);
+                }
+
+            }
+
+                // ✅ Log the activity
+                await _activityLogger.LogUserActivity(expense.UserID, "Created a new expense");
+
+            return RedirectToAction(nameof(Index));
+        }
+        private void LoadViewData(Expense expense)
+        {
             ViewData["CategoryID"] = new SelectList(_context.ExpenseCategories, "ExpenseCategoryID", "Name", expense.ExpenseCategoryID);
             ViewData["PaymentModeID"] = new SelectList(_context.Payments, "PaymentModeID", "Name", expense.PaymentModeID);
-            // Retain entered UserID value if the form is not valid
-            ViewData["UserID"] = expense.UserID;
-
-            return View(expense);
-
-
+            ViewData["UserEmail"] = HttpContext.Session.GetString("UserEmail");
         }
+
+        [HttpGet]
+        // API: Get Budget & Total Spent for Selected Category, Month & Year
+
+        public IActionResult GetCategoryBudget(int categoryId, int year, int month)
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Json(new { success = false, message = "Session expired. Please log in again." });
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found." });
+            }
+
+            // Get total allocated budget for the category in the selected month & year
+            decimal totalBudget = _context.Budgets
+                .Where(b => b.UserID == user.UserID && b.CategoryID == categoryId && b.Year == year && b.Month == month)
+                .Sum(b => b.Amount);
+
+            // Get total expenses already made in this category for selected month & year
+            decimal totalSpent = _context.Expenses
+                .Where(e => e.UserID == user.UserID && e.ExpenseCategoryID == categoryId && e.ExpenseDate.Year == year && e.ExpenseDate.Month == month)
+                .Sum(e => e.Amount);
+
+            return Json(new { success = true, budget = totalBudget, spent = totalSpent });
+        }
+
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -210,6 +366,10 @@ namespace ExpenseTracker.Controllers
 
             ViewData["CategoryID"] = new SelectList(_context.ExpenseCategories, "ExpenseCategoryID", "Name", expense.ExpenseCategoryID);
             ViewData["PaymentModeID"] = new SelectList(_context.Payments, "PaymentModeID", "Name", expense.PaymentModeID);
+
+            // ✅ Log the activity
+          //  await _activityLogger.LogUserActivity(expense.UserID, "Updated an expense");
+
             return View(expense);
 
         }
@@ -240,10 +400,13 @@ namespace ExpenseTracker.Controllers
                 _context.Expenses.Remove(expense);
                 await _context.SaveChangesAsync();
             }
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(expense.UserID, "Deleted an expense");
+
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Income/Details/5
+        // GET: Expense/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -256,7 +419,123 @@ namespace ExpenseTracker.Controllers
 
             if (expense == null) return NotFound();
 
+            // ✅ Log the activity
+            await _activityLogger.LogUserActivity(expense.UserID, "Viewed expense details");
+
             return View(expense);
+        }
+
+        public IActionResult ExportExpensesToCsv()
+        {
+            // Retrieve the logged-in user's email from session
+            var UserEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(UserEmail))
+            {
+                return BadRequest("User not logged in");
+            }
+
+            //Fetch the user by email
+            var user = _context.Users.FirstOrDefault(u => u.Email == UserEmail);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            //Get expenses for the logged-in user
+
+            var expenses = _context.Expenses
+                .Include(e => e.Category)
+                .Include(e => e.Payment)
+                .Include(e => e.User)
+                .Where(e => e.UserID == user.UserID)
+                .ToList();
+
+            //If no budget data exists, return an error message
+            if (expenses.Count == 0)
+            {
+                TempData["ExportMessage"] = "No expense data found. Please add data before exporting.";
+            }
+
+            var csv = new StringBuilder();
+            csv.AppendLine("ExpenseID, UserID, Category, PaymentMode, Amount, Description, ExpenseDate, CreateAt");
+
+            foreach (var expense in expenses)
+            {
+                csv.AppendLine($"{expense.ExpenseID},{expense.UserID},\"{expense.Category?.Name}\",\"{expense.Payment?.PaymentModeID}\",{expense.Amount.ToString("F2", CultureInfo.InvariantCulture)},\"{expense.Description}\",{expense.ExpenseDate:yyyy-MM-dd},{expense.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            }
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+            return File(bytes, "text/csv", "Expenses.csv");
+
+        }
+
+        public IActionResult ExportExpensesToExcel()
+        {
+            // Retrieve the logged-in user's email from session
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest("User not logged in.");
+            }
+
+            // Fetch the user by email
+            var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Get expenses for the logged-in user
+            var expenses = _context.Expenses
+                .Include(e => e.Category)
+                .Include(e => e.Payment)
+                .Include(e => e.User)
+                .Where(e => e.UserID == user.UserID)
+                .ToList();
+
+            //If no budget data exists, return an error message
+            if (expenses.Count == 0)
+            {
+                TempData["ExportMessage"] = "No expense data found. Please add data before exporting.";
+            }
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Expenses");
+                var currentRow = 1;
+
+                // Adding Header
+                worksheet.Cell(currentRow, 1).Value = "ExpenseID";
+                worksheet.Cell(currentRow, 2).Value = "UserID";
+                worksheet.Cell(currentRow, 3).Value = "Category";
+                worksheet.Cell(currentRow, 4).Value = "Payment Mode";
+                worksheet.Cell(currentRow, 5).Value = "Amount";
+                worksheet.Cell(currentRow, 6).Value = "Description";
+                worksheet.Cell(currentRow, 7).Value = "Expense Date";
+                worksheet.Cell(currentRow, 8).Value = "Created At";
+
+                // Adding Data
+                foreach (var expense in expenses)
+                {
+                    currentRow++;
+                    worksheet.Cell(currentRow, 1).Value = expense.ExpenseID;
+                    worksheet.Cell(currentRow, 2).Value = expense.UserID;
+                    worksheet.Cell(currentRow, 3).Value = expense.Category?.Name;
+                    worksheet.Cell(currentRow, 4).Value = expense.Payment?.PaymentModeID;
+                    worksheet.Cell(currentRow, 5).Value = expense.Amount;
+                    worksheet.Cell(currentRow, 6).Value = expense.Description;
+                    worksheet.Cell(currentRow, 7).Value = expense.ExpenseDate.ToString("yyyy-MM-dd");
+                    worksheet.Cell(currentRow, 8).Value = expense.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+
+                // Save to MemoryStream
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Expenses.xlsx");
+                }
+            }
         }
 
 

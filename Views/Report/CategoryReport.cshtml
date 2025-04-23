@@ -1,0 +1,129 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model ExpenseTracker.Model.CategoryReportViewModel
+@{
+    ViewData["Title"] = "Category Expense Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Category Expense Report</h2>
+
+    <a asp-controller="Report" asp-action="TopCategoriesSummary" class="btn btn-primary">
+        Get Top Categories Summary
+    </a>
+</div>
+
+
+
+<form method="get" asp-action="CategoryReport" asp-controller="Report" class="mb-4">
+    <div class="form-group">
+        <label>Select Category</label>
+        <select asp-for="SelectedCategoryId" asp-items="Model.Categories" class="form-control" onchange="this.form.submit()">
+            <option value="">-- Choose Category --</option>
+        </select>
+    </div>
+</form>
+
+@if (Model.SelectedCategoryId > 0)
+{
+    <div id="reportSection">
+        <h4>Report for: @Model.Categories.FirstOrDefault(c => c.Value == Model.SelectedCategoryId.ToString())?.Text</h4>
+        <p><strong>Total Expenses:</strong> @Model.ExpenseCount</p>
+        <p><strong>Total Amount:</strong> @Model.TotalAmount.ToString("C")</p>
+
+        <table class="table table-bordered mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Expenses)
+                {
+                    <tr>
+                        <td>@item.ExpenseDate.ToShortDateString()</td>
+                        <td>@item.Amount.ToString("C")</td>
+                        <td>@item.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <canvas id="barChart" width="1200" height="750"></canvas>
+        <canvas id="pieChart" width="700" height="450" class="mt-3"></canvas>
+    </div>
+
+    @* <form id="pdfForm" method="post" asp-action="ExportCategoryReportToPDF" asp-controller="Report"> *@
+    @*     <input type="hidden" name="CategoryId" value="@Model.SelectedCategoryId" /> *@
+    @*     <input type="hidden" id="chartImageBase64" name="ChartImageBase64" /> *@
+    @*     <button type="submit" class="btn btn-primary mt-3" onclick="preparePdfData()">Export to PDF</button> *@
+    @* </form> *@
+    <form id="pdfForm" method="post" asp-action="ExportCategoryReportToPDF" asp-controller="Report">
+        <input type="hidden" name="CategoryId" value="@Model.SelectedCategoryId" />
+        <input type="hidden" id="BarChartImage" name="BarChartImage" />
+        <input type="hidden" id="PieChartImage" name="PieChartImage" />
+        <button type="submit" class="btn btn-primary mt-3" onclick="preparePdfData()">Export to PDF</button>
+    </form>
+
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(Json.Serialize(Model.Expenses.Select(e => e.ExpenseDate.ToString("MMM dd"))));
+        const data = @Html.Raw(Json.Serialize(Model.Expenses.Select(e => e.Amount)));
+
+        const barCtx = document.getElementById('barChart');
+        const pieCtx = document.getElementById('pieChart');
+
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Amount',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    barthickness:30
+                }]
+            },
+            options: {
+                responsive: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        const pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Amount',
+                    data: data,
+                    backgroundColor: labels.map(() => `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, 0.6)`)
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+            }
+        });
+
+        function preparePdfData() {
+            // const canvas = document.getElementById('barChart');
+            // const base64Image = canvas.toDataURL("image/png");
+            // document.getElementById('chartImageBase64').value = base64Image;
+                document.getElementById('BarChartImage').value = barChart.toBase64Image();
+        document.getElementById('PieChartImage').value = pieChart.toBase64Image();
+        }
+    </script>
+}

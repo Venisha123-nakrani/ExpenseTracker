@@ -23,6 +23,8 @@ namespace ExpenseTracker.Data
         public DbSet<Income> Incomes { get; set; }
         public DbSet<IncomeCategory> IncomeCategories { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<UserActivity> UserActivities { get; set; }
+        public DbSet<Saving> Savings { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -67,6 +69,14 @@ namespace ExpenseTracker.Data
                 .WithMany(p => p.Expenses)
                 .HasForeignKey(e => e.PaymentModeID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserActivity>()
+    .HasOne(ua => ua.User)
+    .WithMany(u => u.UserActivities)
+    .HasForeignKey(ua => ua.UserID)
+    .OnDelete(DeleteBehavior.Cascade);
+
+
 
         }
     }

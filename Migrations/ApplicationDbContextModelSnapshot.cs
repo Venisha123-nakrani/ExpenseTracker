@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ExpenseTracker.Migrations
+namespace ExpenseTracker_Final.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -292,6 +292,10 @@ namespace ExpenseTracker.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime");
 
+                    b.Property<int>("DateOfMonth")
+                        .HasColumnType("int")
+                        .HasColumnName("DateOfMonth");
+
                     b.Property<DateOnly?>("EndDate")
                         .HasColumnType("date");
 
@@ -299,6 +303,13 @@ namespace ExpenseTracker.Migrations
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PaymentModeID")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentModeID");
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
@@ -311,9 +322,44 @@ namespace ExpenseTracker.Migrations
 
                     b.HasIndex("CategoryID");
 
+                    b.HasIndex("PaymentModeID");
+
                     b.HasIndex("UserID");
 
                     b.ToTable("RecurringExpenses");
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Model.Saving", b =>
+                {
+                    b.Property<int>("SavingID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SavingID"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("SavingID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Savings");
                 });
 
             modelBuilder.Entity("ExpenseTracker.Model.User", b =>
@@ -324,6 +370,17 @@ namespace ExpenseTracker.Migrations
                         .HasColumnName("UserID");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime");
@@ -340,9 +397,24 @@ namespace ExpenseTracker.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("ImagePath")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<DateTime?>("TokenExpiryTime")
+                        .HasColumnType("datetime");
 
                     b.HasKey("UserID");
 
@@ -365,6 +437,32 @@ namespace ExpenseTracker.Migrations
                             FullName = "John Doe",
                             PasswordHash = "User@123"
                         });
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Model.UserActivity", b =>
+                {
+                    b.Property<int>("ActivityID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ActivityID"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ActivityID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("UserActivities");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -668,6 +766,12 @@ namespace ExpenseTracker.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ExpenseTracker.Model.Payment", "Payment")
+                        .WithMany("RecurringExpenses")
+                        .HasForeignKey("PaymentModeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ExpenseTracker.Model.User", "User")
                         .WithMany("RecurringExpenses")
                         .HasForeignKey("UserID")
@@ -675,6 +779,30 @@ namespace ExpenseTracker.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Model.Saving", b =>
+                {
+                    b.HasOne("ExpenseTracker.Model.User", "User")
+                        .WithMany("Savings")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Model.UserActivity", b =>
+                {
+                    b.HasOne("ExpenseTracker.Model.User", "User")
+                        .WithMany("UserActivities")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -754,6 +882,8 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+
+                    b.Navigation("RecurringExpenses");
                 });
 
             modelBuilder.Entity("ExpenseTracker.Model.User", b =>
@@ -767,6 +897,10 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("Incomes");
 
                     b.Navigation("RecurringExpenses");
+
+                    b.Navigation("Savings");
+
+                    b.Navigation("UserActivities");
                 });
 #pragma warning restore 612, 618
         }

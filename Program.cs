@@ -1,6 +1,7 @@
-using ExpenseTracker.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using ExpenseTracker.Data;
+using ExpenseTracker.Model;
+using ExpenseTracker.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,70 +9,118 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddSession();
+// 🔹 Email service for notifications
+builder.Services.AddSingleton<EmailService>();
 
-// Configure Database
+builder.Services.AddScoped<GmailImapService>();
+
+// 🔹 Hosted service for recurring expenses
+builder.Services.AddScoped<RecurringExpenseJob>();
+builder.Services.AddHostedService<RecurringExpenseHostedService>();
+
+builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddUserStore<CustomUserStore>() // Use CustomUserStore here
+    .AddDefaultTokenProviders();
+
+// 🔹 Add services to the container
+builder.Services.AddControllersWithViews();
+
+// 🔹 Configure Session (30-minute expiration)
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // 🔹 Session expires after 30 minutes
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+// 🔹 Configure Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure Identity
+// 🔹 Configure Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure application cookie settings.
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Login/Login";
-    options.AccessDeniedPath = "/Login/AccessDenied";
-});
-
-// Retrieve JWT secret from configuration or use default.
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-256-bit-secret";
+// 🔹 Configure JWT Authentication
+var jwtSecret = builder.Configuration["Jwt:Key"] ?? "your-256-bit-secret";
 var key = Encoding.UTF8.GetBytes(jwtSecret);
-//var jwtSecret = builder.Configuration["Jwt:Secret"];
-//var key = Encoding.UTF8.GetBytes(jwtSecret);
 
-
-// Add authentication and configure both cookie and JWT Bearer schemes.
 builder.Services.AddAuthentication(options =>
 {
-    // Set the default authentication scheme to the Identity cookie scheme.
-    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
-.AddCookie() // This is used by Identity.
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/Login/Login";
+    options.LogoutPath = "/Login/Logout";
+    options.AccessDeniedPath = "/Login/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 🔹 Expire in 30 minutes
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+})
 .AddJwtBearer("JwtBearer", options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 🔹 Configure Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-app.UseSession();
+
+app.UseSession(); // 🔹 Use Session Middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-app.UseAuthentication(); // Enable authentication middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
+// 🔹 Restore Session on App Restart
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity.IsAuthenticated && string.IsNullOrEmpty(context.Session.GetString("UserEmail")))
+    {
+        var userEmail = context.User.FindFirst("Email")?.Value;
+        var userImage = context.User.FindFirst("UserImage")?.Value ?? "/images/default-user.png";
+
+        if (!string.IsNullOrEmpty(userEmail))
+        {
+            context.Session.SetString("UserEmail", userEmail);
+            context.Session.SetString("UserImage", userImage);
+        }
+    }
+
+    //if (context.Request.Path == "/Login/Logout")
+    //{
+    //    context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+    //    context.Response.Headers["Pragma"] = "no-cache";
+    //    context.Response.Headers["Expires"] = "0";
+    //}
+
+    await next();
+});
+
+// 🔹 Set Default Route
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Login}/{action=Login}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

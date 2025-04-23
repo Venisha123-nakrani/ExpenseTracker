@@ -1,25 +1,71 @@
 ﻿@model IEnumerable<ExpenseTracker.Model.Expense>
 
-<h2>Expense List</h2>
+@{
+    ViewData["Title"] = "Expense List";
+    var isIncome = false;
+}
 
-<!-- Search & Filters -->
-<form method="get" asp-action="Index" id="filterForm" class="row g-3 mb-3 d-flex align-items-end">
-    <div class="col-lg-9 col-md-8 col-sm-12">
-        <input type="text" name="searchString" id="searchString" value="@ViewData["searchString"]"
-               class="form-control" placeholder="Search...">
-    </div>
-    <div class="col-lg-3 col-md-4 col-sm-12 d-flex justify-content-end">
-        <button type="submit" class="btn btn-primary w-100">Search</button>
+<div class="finance-container expense-theme">
+    <!-- Toggle Partial -->
+    <partial name="_TogglePartial" />
+
+    <div class="finance-header">
+        <h2><i class="fas fa-shopping-cart me-2"></i>Expense List</h2>
+        <div class="header-actions">
+            <a asp-action="Create" class="btn btn-expense">
+                <i class="fas fa-plus me-2"></i>Add New Expense
+            </a>
+        </div>
     </div>
 
-    <div class="row g-3 mb-3 d-flex align-items-center">
-        <div class="col-lg-auto col-md-auto col-sm-12">
-            <a asp-action="Create" class="btn btn-primary w-100">Add New Expense</a>
+    <!-- Search & Filters -->
+    <form method="get" asp-action="Index" id="filterForm" class="finance-filters">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" name="searchString" value="@ViewData["searchString"]"
+                   placeholder="Search expenses...">
+            <button type="submit" class="btn btn-expense">Search</button>
         </div>
 
-        <div class="col-lg-auto col-md-auto col-sm-12 ms-auto d-flex">
-            <div class="me-2">
-                <select name="sortOrder" id="sortOrder" class="form-select" onchange="submitForm()">
+        <div class="d-flex justify-content-end mb-3 gap-3">
+            <div class="dropdown">
+                <button class="btn btn-success text-white dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-download"></i> Export Expense
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Expense" asp-action="ExportExpensesToCsv">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Expense" asp-action="ExportExpensesToExcel">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        @if (TempData["ExportMessage"] != null)
+        {
+            <div class="toast-container position-fixed bottom-0 end p-3">
+                <div class="toast align-items-center text-bg-warning border-0 show" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            @TempData["ExportMessage"]
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+        <div class="filter-controls">
+            <div class="filter-group">
+                <label>Sort By:</label>
+                <select name="sortOrder" onchange="submitForm()">
                     <option value="date_asc" selected="@(ViewData["CurrentSort"] as string == "date_asc" ? "selected" : null)">Date: Oldest First</option>
                     <option value="date_desc" selected="@(ViewData["CurrentSort"] as string == "date_desc" ? "selected" : null)">Date: Newest First</option>
                     <option value="amount_asc" selected="@(ViewData["CurrentSort"] as string == "amount_asc" ? "selected" : null)">Amount: Low to High</option>
@@ -29,9 +75,10 @@
                 </select>
             </div>
 
-            <div>
-                <select name="categoryId" id="categoryId" class="form-select" onchange="submitForm()">
-                    <option value="">Categories</option>
+            <div class="filter-group">
+                <label>Category:</label>
+                <select name="categoryId" onchange="submitForm()">
+                    <option value="">All Categories</option>
                     @foreach (var category in (SelectList)ViewData["Categories"])
                     {
                         <option value="@category.Value" selected="@(ViewData["categoryId"]?.ToString() == category.Value ? "selected" : null)">
@@ -41,63 +88,97 @@
                 </select>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<!-- Expense Table -->
-<div class="table-responsive">
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Description</th>
-                <th>Expense Date</th>
-                <th>Payment Mode</th>
-                <th>User</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <!-- Expense Table -->
+    <div class="finance-table">
+        <table>
+            <thead>
                 <tr>
-                    <td>@item.Category.Name</td>
-                    <td>@item.Amount</td>
-                    <td>@item.Description</td>
-                    <td>@item.ExpenseDate.ToString("yyyy-MM-dd")</td>
-                    <td>@item.Payment.Name</td>
-                    <td>@item.User.Email</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.ExpenseID" class="btn btn-warning btn-sm">Edit</a>
-                        <a asp-action="Details" asp-route-id="@item.ExpenseID" class="btn btn-info btn-sm">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.ExpenseID" class="btn btn-danger btn-sm">Delete</a>
-                    </td>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="category-badge expense">@item.Category.Name</span>
+                        </td>
+                        <td class="amount">₹@item.Amount.ToString("N2")</td>
+                        <td>@item.Description</td>
+                        <td>@item.ExpenseDate.ToString("MMM dd, yyyy")</td>
+                        <td>@item.Payment.Name</td>
+                        <td class="actions">
+                            <a asp-action="Edit" asp-route-id="@item.ExpenseID" class="btn btn-sm btn-edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a asp-action="Details" asp-route-id="@item.ExpenseID" class="btn btn-sm btn-info">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.ExpenseID" class="btn btn-sm btn-delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-<!-- Pagination -->
-@if (ViewData["TotalPages"] != null)
-{
-    int totalPages = (int)ViewData["TotalPages"];
-    int currentPage = (int)ViewData["CurrentPage"];
-
-    <nav aria-label="Expense Pagination">
-        <ul class="pagination justify-content-center">
-            @for (int i = 1; i <= totalPages; i++)
+    <!-- Pagination -->
+    @if (ViewData["TotalPages"] != null)
+    {
+        <div class="finance-pagination">
+            @if ((int)ViewData["CurrentPage"] > 1)
             {
-                <li class="page-item @(i == currentPage ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { sortOrder = ViewData["CurrentSort"], categoryId = ViewData["categoryId"], searchString = ViewData["searchString"], pageNumber = i })">
-                        @i
-                    </a>
-                </li>
+                <a asp-action="Index" asp-route-pageNumber="1"
+                   asp-route-searchString="@Context.Request.Query["searchString"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="page-link first">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a asp-action="Index" asp-route-pageNumber="@((int)ViewData["CurrentPage"] - 1)"
+                   asp-route-searchString="@Context.Request.Query["searchString"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="page-link prev">
+                    <i class="fas fa-angle-left"></i>
+                </a>
             }
-        </ul>
-    </nav>
-}
+
+            @for (int i = 1; i <= (int)ViewData["TotalPages"]; i++)
+            {
+                <a asp-action="Index" asp-route-pageNumber="@i"
+                   asp-route-searchString="@Context.Request.Query["searchString"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="page-link @(i == (int)ViewData["CurrentPage"] ? "active" : "")">
+                    @i
+                </a>
+            }
+
+            @if ((int)ViewData["CurrentPage"] < (int)ViewData["TotalPages"])
+            {
+                <a asp-action="Index" asp-route-pageNumber="@((int)ViewData["CurrentPage"] + 1)"
+                   asp-route-searchString="@Context.Request.Query["searchString"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="page-link next">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a asp-action="Index" asp-route-pageNumber="@ViewData["TotalPages"]"
+                   asp-route-searchString="@Context.Request.Query["searchString"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="page-link last">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>
 
 <!-- JavaScript for Auto-Submit -->
 <script>
@@ -105,3 +186,170 @@
         document.getElementById("filterForm").submit();
     }
 </script>
+
+<style>
+    /* Expense Theme Styles */
+    .expense-theme {
+        --primary-color: #0b8043;
+        --primary-light: #e6f4ea;
+        --primary-dark: #0a5c36;
+    }
+
+    .finance-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .finance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .finance-header h2 {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+    .btn-expense {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+    }
+
+        .btn-expense:hover {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+    .finance-filters {
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 5px 10px;
+    }
+
+        .search-box i {
+            color: #777;
+            margin-right: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+        }
+
+    .filter-controls {
+        display: flex;
+        gap: 15px;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+    .finance-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+        .finance-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .finance-table th {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .finance-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+    .category-badge.expense {
+        background: var(--primary-light);
+        color: var(--primary-color);
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+
+    .amount {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-edit {
+        background: #ffc107;
+        color: white;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+
+    .finance-pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 5px;
+    }
+
+    .page-link {
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #555;
+        text-decoration: none;
+    }
+
+        .page-link.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-link:hover:not(.active) {
+            background: #f5f5f5;
+        }
+</style>

@@ -20,5 +20,7 @@ namespace ExpenseTracker.Model
         [InverseProperty("Payment")]
         public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
         public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
+        public virtual ICollection<RecurringExpense> RecurringExpenses { get; set; } = new List<RecurringExpense>();
+
     }
 }
